@@ -1,0 +1,5 @@
+{
+  "name": "monitoring-harness",
+  "version": "0.1.0",
+  "description": "monitoring repos(hub/script-agent/monitoring-meta)용 shared Claude Code/Codex harness plugin 후보. H0 bootstrap 단계로 hooks/agents/settings는 아직 비활성이다."
+}

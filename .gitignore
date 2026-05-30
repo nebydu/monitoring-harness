@@ -1,0 +1,15 @@
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Codex gate 실행 아티팩트 (향후 hook 도입 시)
+*.log
+.codex-gate-state
+.codex-last-message.json
+.codex-gate-stderr.txt
+.codex-gate-issues.txt
