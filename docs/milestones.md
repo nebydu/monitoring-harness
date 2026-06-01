@@ -31,12 +31,25 @@
 
 ## H2 — C1 codex-gate 공통 골격 prototype (script-agent에만 시범 적용)
 
+H2는 두 부분으로 나뉜다: **H2-A**(harness 내부 골격·profile·동등성 기록, 게이트 없음) /
+**H2-B**(script-agent 실제 시범 적용, 사람 확인 게이트).
+
 - **목표**: codex-gate.sh 공통 골격 + profile 주입 방식 prototype을 만들고 **script-agent 1개에만**
   시범 적용.
 - **산출물**: `shared/hooks/` 공통 골격, script-agent용 profile 예시, 적용 전/후 동작 동등성 기록.
 - **하지 않는 것**: hub/meta 적용. script-agent 외 repo 수정.
 - **사람 확인 게이트**: script-agent에서 기존 codex-gate와 **동작 동등** 확인 후에만 적용 유지.
 - **rollback 기준**: script-agent `.claude/`는 git으로 즉시 원복. plugin 골격은 사본 유지(미참조 상태로 회귀).
+
+### 진행 현황
+
+- **H2-A 완료**: `shared/hooks/codex-gate-core.sh`(주입점 분리 공통 골격),
+  `profiles/script-agent.profile.example`, `codex-gate.wrapper.example.sh`, `equivalence.md` 작성.
+  정적 검증(`bash -n`, 주입점 가드 양방향, `match_any` 트리거/스킵 판정 == 원본 case-list) 통과.
+- **H2-B 보류(사람 결정)**: script-agent 실제 적용은 **wiring 표준이 정해진 뒤로 보류**한다.
+  현재 script-agent `.claude/`는 **무변경**. wiring 후보(vendor 사본 / relative-path source /
+  plugin `user_config`)와 settings.json 영향은 H5 plugin 모델 확정과 함께 재검토한다.
+  (런타임 동등성 확인은 H2-B에서 수행 — 아직 미수행)
 
 ---
 
