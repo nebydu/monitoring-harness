@@ -64,11 +64,14 @@
 
 ## C3. codex-schema.json
 
-세 repo의 `.claude/codex-schema.json`은 **byte-for-byte 동일**하다
+세 repo의 `.claude/codex-schema.json`은 **내용이 동일**하다
 (`verdict` / `critical_issues` / `spec_violations` / `summary`, `additionalProperties: false`).
+단 줄바꿈은 다르다 — hub만 CRLF(484B), script-agent·monitoring-meta는 LF(462B)다. CR을 제거한
+정규화 기준에서 세 repo 해시가 모두 일치한다(엄밀한 byte-for-byte 동일은 아님). H1 검증 결과는
+[`../shared/schemas/equivalence-check.md`](../shared/schemas/equivalence-check.md) 참고.
 
-→ **공통 1부 후보**. 단 **H0에서는 복사하지 않고 위치만 예약**한다
-(→ [`../shared/schemas/README.md`](../shared/schemas/README.md)). 실제 공통화는 H1에서 다룬다.
+→ **공통 1부 후보**(H1에서 LF 정본으로 확정). H0에서는 복사하지 않고 위치만 예약했고, 실제 공통화는
+H1에서 다뤘다 (→ [`../shared/schemas/README.md`](../shared/schemas/README.md)).
 
 ---
 
