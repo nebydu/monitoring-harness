@@ -1,0 +1,4 @@
+# 공통 1부 정본의 줄바꿈을 LF로 고정한다 (H1 codex-schema.json 동등성 보장)
+*.json text eol=lf
+# 향후 공통 hook 골격(H2)도 LF 유지 — CRLF 시 shebang/파싱 깨짐 방지
+*.sh text eol=lf
