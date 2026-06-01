@@ -62,8 +62,19 @@
 
 ## H5 — plugin packaging / installation 문서화
 
-- **목표**: plugin 설치·활성화·버전 관리 절차를 문서화하고 manifest를 실제 활성 형태로 정리.
-- **산출물**: 설치/적용 가이드, 활성화된 `plugin.json`(hooks/agents 참조 포함), 버전 정책.
+- **목표**: plugin 설치·활성화·**업데이트(sync) 절차**·버전 관리 정책을 문서화하고 manifest를 실제
+  활성 형태로 정리.
+- **산출물**:
+  - 설치/적용 가이드(`/plugin marketplace add` → `/plugin install`), 활성화된 `plugin.json`
+    (hooks/agents 참조 포함).
+  - **sync/업데이트 모델 문서화**: 공통 hook 변경 → consumer 반영 경로.
+    - plugin은 cache로 복사되므로 in-place 자동 동기화가 아니다. `/plugin update`(또는 auto-update)로만
+      반영되고, 세션 중에는 `/reload-plugins` 후 새 hook이 적용된다(이전엔 구 버전 경로 유지).
+    - hook 경로는 `${CLAUDE_PLUGIN_ROOT}`, 업데이트를 넘어 보존할 상태(escalation 카운터 등)는
+      `${CLAUDE_PLUGIN_DATA}`.
+  - **버전 정책 확정**: 빠른 반복(H2~H4)은 commit-SHA(=`version` 생략), 정식 릴리스는 explicit
+    semver + bump 규율. `plugin.json` `version` 고정 시 bump 없이는 전파되지 않는 함정을 명시.
+    (상세 비교 → [`consumer-contract.md`](consumer-contract.md) "공통부 변경의 sync/업데이트 모델")
 - **하지 않는 것**: 검증되지 않은 consumer를 일괄 전환하지 않는다.
-- **사람 확인 게이트**: packaging/활성화 manifest 검토.
+- **사람 확인 게이트**: packaging/활성화 manifest + sync·버전 정책 검토.
 - **rollback 기준**: manifest를 비활성(H0 형태)으로 되돌리고 consumer는 각자 `.claude/`로 회귀.
