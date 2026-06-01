@@ -10,14 +10,15 @@
 `CLAUDE.md` 코어 섹션, agent scaffold)는 사실상 같은 코드를 손으로 세 번 유지하면서 **drift**가
 쌓인다. 이 repo는 그 공통부를 plugin/shared로 끌어올려 **drift를 줄이는 것**을 목표로 한다.
 
-## 현재 상태: H0 (bootstrap)
+## 현재 상태: H5 (packaging) — 설치 가능, consumer 롤아웃은 게이트
 
-- **부트스트랩 + 설계 문서만** 존재한다. 실제 hook 공통화 구현, agent migration, consumer 적용은
-  하지 않았다.
-- **아직 어떤 consumer repo에도 적용하지 않았다.** 기존 `hub`/`script-agent`/`monitoring-meta`의
-  `.claude/`가 계속 **source of execution**이다.
-- plugin manifest(`.claude-plugin/plugin.json`)는 hooks/agents/settings를 **활성화하지 않은**
-  최소 형태다.
+- **진행 완료**: H0 부트스트랩/설계 → H1 공통 스키마 1부 → H2-A codex-gate 공통 골격 →
+  H5 plugin packaging(마켓플레이스·설치/업데이트 가이드).
+- **플러그인은 설치 가능한 형태**다(`.claude-plugin/marketplace.json` + `plugin.json` + `hooks/`).
+  공통 골격 `codex-gate-core.sh`, 공통 스키마, codex-gate 저작 skill을 제공한다.
+- **단, consumer 일괄 전환은 하지 않았다.** 기존 `hub`/`script-agent`/`monitoring-meta`의 `.claude/`가
+  계속 **source of execution**이다. 첫 적용(script-agent, **H2-B**)은 사람 확인 게이트로 진행한다.
+- 설치/적용/업데이트 절차는 [`docs/installation.md`](docs/installation.md) 참고.
 
 ## 적용 원칙
 
@@ -29,14 +30,17 @@
 
 ## 당장 사용법
 
-> **아직 설치하거나 적용하지 마세요.**
+> 설치는 가능하지만, **consumer 적용은 사람 확인 게이트(H2-B~)를 거쳐 단계적으로** 진행한다.
+> 임의로 세 repo에 일괄 적용하지 말 것.
 
-이 repo는 현재 **설계 검토와 milestone 관리용**이다. 실제 적용은 이후 단계(H1~)에서 사람 확인 게이트를
-거쳐 진행한다.
+개인 시험 설치/구성/업데이트는 [`docs/installation.md`](docs/installation.md)를 따른다. 첫 정식 적용
+대상은 script-agent(H2-B)다.
 
 ## 문서
 
+- [`docs/installation.md`](docs/installation.md) — 설치·적용·업데이트(sync)·버전 정책·rollback
 - [`docs/design.md`](docs/design.md) — 공통화 후보(C1~C4) / skills 후보 / 금지 원칙
-- [`docs/milestones.md`](docs/milestones.md) — H0~H5 단계 계획
-- [`docs/consumer-contract.md`](docs/consumer-contract.md) — consumer profile 주입 방식 후보
+- [`docs/milestones.md`](docs/milestones.md) — H0~H5 단계 계획·진행 현황
+- [`docs/consumer-contract.md`](docs/consumer-contract.md) — wiring 표준 / profile 주입 / sync 모델
+- [`shared/hooks/`](shared/hooks/) — 공통 골격 `codex-gate-core.sh` + profile 예시 + 동등성 기록
 - [`skills/codex-gate-authoring/SKILL.md`](skills/codex-gate-authoring/SKILL.md) — codex-gate 저작 레시피

@@ -1,5 +1,9 @@
 {
   "name": "monitoring-harness",
-  "version": "0.1.0",
-  "description": "monitoring repos(hub/script-agent/monitoring-meta)용 shared Claude Code/Codex harness plugin 후보. H0 bootstrap 단계로 hooks/agents/settings는 아직 비활성이다."
+  "description": "monitoring repos(hub/script-agent/monitoring-meta)용 shared Claude Code/Codex harness plugin. Codex gate 공통 골격·공통 스키마·codex-gate 저작 skill을 제공하고, 도메인 delta는 consumer profile로 주입한다. consumer 적용은 단계적 게이트(H2-B~)로 진행한다.",
+  "author": {
+    "name": "nebydu"
+  },
+  "homepage": "https://github.com/nebydu/monitoring-harness",
+  "repository": "https://github.com/nebydu/monitoring-harness"
 }
