@@ -10,8 +10,9 @@
 #       첫 인자 = consumer profile 경로(plugin config user_config.profile에서 주입).
 set -euo pipefail
 
-# 1) consumer profile 경로: 첫 인자(우선) 또는 CODEX_GATE_PROFILE 환경변수
-PROFILE="${1:-${CODEX_GATE_PROFILE:-}}"
+# 1) consumer profile 경로: 첫 인자(우선) → CODEX_GATE_PROFILE → CLAUDE_PLUGIN_OPTION_PROFILE
+#    (plugin userConfig.profile는 ${user_config.profile} 인자이자 CLAUDE_PLUGIN_OPTION_PROFILE 환경변수로 주입됨)
+PROFILE="${1:-${CODEX_GATE_PROFILE:-${CLAUDE_PLUGIN_OPTION_PROFILE:-}}}"
 if [ -z "$PROFILE" ] || [ ! -f "$PROFILE" ]; then
   echo "[codex-gate] 구성 오류: consumer profile 경로 미지정/없음 ('$PROFILE'). plugin config(user_config.profile)를 확인하세요." >&2
   exit 2
