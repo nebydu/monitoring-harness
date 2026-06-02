@@ -2,9 +2,9 @@
 
 monitoring-harness 플러그인의 설치/활성화/구성/업데이트(sync)/버전 정책/rollback을 정리한다.
 
-> **현재 상태**: 플러그인은 **설치 가능한 형태로 packaging**됐다. 다만 consumer(hub/script-agent/
-> monitoring-meta) **일괄 전환은 하지 않는다**. 실제 적용은 단계적 게이트(H2-B → H3 → H4)로 진행하며,
-> 첫 적용 대상은 script-agent다. 아래 절차는 그 적용을 위한 표준이다.
+> **현재 상태**: **script-agent는 이 플러그인으로 전환 완료**(H2-B, `f1092e3`). hub/monitoring-meta는
+> **일괄 전환하지 않는다** — 적용 여부는 단계적 게이트(H3 → H4)로 판단한다. 아래 절차는 그 적용 표준이며,
+> script-agent가 이 절차의 첫 적용 사례다.
 
 ## 0. 구성 개요 (wiring 표준)
 

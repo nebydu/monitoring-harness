@@ -2,15 +2,16 @@
 
 codex-gate Stop hook의 **공통 골격**(C1)이 놓이는 디렉터리다.
 
-## 현재 상태 (H2-A 완료, H2-B 게이트 대기)
+## 현재 상태 (H2-B 완료 — script-agent 전환됨)
 
-- `codex-gate-core.sh` — 공통 골격(prototype). 세 repo 동일 실행 로직만 추출, 도메인 delta는 주입점으로 분리.
+- `codex-gate-core.sh` — 공통 골격. 세 repo 동일 실행 로직만 추출, 도메인 delta는 주입점으로 분리.
 - `profiles/script-agent.profile.example` — script-agent delta 주입값 예시(현행 동작 재현).
-- `codex-gate.wrapper.example.sh` — consumer 얇은 wrapper 예시(profile 로드 + core source).
-- `equivalence.md` — script-agent 현행 gate와의 동등성 매핑/검증 기록.
+- `codex-gate.wrapper.example.sh` — vendor/relative wiring용 얇은 wrapper 예시(plugin 모델에선 불요).
+- `equivalence.md` — 정적 동등성 매핑. `h2b-validation.md` — 런타임 동등성·cutover 기록.
 
-> **consumer 미적용**: 위 파일은 모두 harness repo 내부 예시다. script-agent `.claude/`는 아직
-> 수정하지 않았다(H2-B 시범 적용은 사람 확인 게이트 대상).
+> **script-agent 전환 완료**: script-agent는 plugin 모델로 cutover됨(`f1092e3` — native
+> `.claude/hooks/codex-gate.sh` 삭제, convention profile 커밋, plugin이 Stop 게이트). hub/meta는 미적용
+> (H3/H4 판단 대상). 위 골격 파일은 plugin이 `${CLAUDE_PLUGIN_ROOT}`로 참조한다.
 
 ## 주입점 (도메인 delta — core가 하드코딩하지 않음)
 
