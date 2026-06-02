@@ -26,9 +26,11 @@
 
 ## profile 주입 방식 후보
 
-> **결정(H5)**: 아래 후보 중 **4안(plugin `${user_config.*}` 치환)** 을 wiring 표준으로 채택했다.
-> consumer는 profile 델타 파일만 두고, 골격/스키마/배선은 plugin이 제공한다. 절차는
-> [`installation.md`](installation.md) §0/§2. 아래 후보 목록은 결정 근거로 보존한다.
+> **결정(H5, H2-B에서 정련)**: **plugin 모델 + convention 경로** 주입을 wiring 표준으로 채택했다.
+> consumer는 profile 델타 파일을 **convention 위치**(`${CLAUDE_PROJECT_DIR}/.claude/codex-gate.profile`)에
+> 두기만 하면 되고, 골격/스키마/배선은 plugin이 제공한다. 초기엔 4안(`${user_config.*}`)을 검토했으나,
+> per-user config 분리·절대경로 문제(H2-B gotcha)로 인해 **userConfig 없이 convention 자동탐색**으로
+> 정련했다. 절차는 [`installation.md`](installation.md) §0/§2. 아래 후보 목록은 결정 근거로 보존한다.
 
 H2에서 다음 중 하나(또는 조합)를 prototype으로 검증한다. **H0에서는 결정하지 않는다.**
 

@@ -9,7 +9,7 @@
             "command": "${CLAUDE_PLUGIN_ROOT}/hooks/git-bash.cmd",
             "args": [
               "${CLAUDE_PLUGIN_ROOT}/hooks/codex-gate-entry.sh",
-              "${user_config.profile}"
+              "${CLAUDE_PROJECT_DIR}/.claude/codex-gate.profile"
             ]
           }
         ]

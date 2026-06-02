@@ -7,14 +7,15 @@
 #   - escalation 카운터 등 보존 상태는 업데이트를 넘어 사는 ${CLAUDE_PLUGIN_DATA}에 둔다.
 #
 # 호출: hooks/hooks.json의 Stop hook이 git-bash.cmd 경유로 이 스크립트를 부른다.
-#       첫 인자 = consumer profile 경로(plugin config user_config.profile에서 주입).
+#       첫 인자 = consumer profile 경로(기본: ${CLAUDE_PROJECT_DIR}/.claude/codex-gate.profile = convention).
 set -euo pipefail
 
-# 1) consumer profile 경로: 첫 인자(우선) → CODEX_GATE_PROFILE → CLAUDE_PLUGIN_OPTION_PROFILE
-#    (plugin userConfig.profile는 ${user_config.profile} 인자이자 CLAUDE_PLUGIN_OPTION_PROFILE 환경변수로 주입됨)
-PROFILE="${1:-${CODEX_GATE_PROFILE:-${CLAUDE_PLUGIN_OPTION_PROFILE:-}}}"
+# 1) consumer profile 경로 결정 (우선순위: override env → 인자(convention) → CLAUDE_PROJECT_DIR convention)
+#    - 기본은 consumer repo의 convention 위치다. per-user config나 절대경로가 필요 없어 협업자 공유에 안전하다.
+#    - 비표준 위치를 쓰려면 CODEX_GATE_PROFILE 환경변수로만 덮어쓴다(테스트/예외용).
+PROFILE="${CODEX_GATE_PROFILE:-${1:-${CLAUDE_PROJECT_DIR:-}/.claude/codex-gate.profile}}"
 if [ -z "$PROFILE" ] || [ ! -f "$PROFILE" ]; then
-  echo "[codex-gate] 구성 오류: consumer profile 경로 미지정/없음 ('$PROFILE'). plugin config(user_config.profile)를 확인하세요." >&2
+  echo "[codex-gate] 구성 오류: consumer profile을 찾지 못함 ('$PROFILE'). <repo>/.claude/codex-gate.profile 존재를 확인하세요." >&2
   exit 2
 fi
 

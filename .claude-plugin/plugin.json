@@ -5,13 +5,5 @@
     "name": "nebydu"
   },
   "homepage": "https://github.com/nebydu/monitoring-harness",
-  "repository": "https://github.com/nebydu/monitoring-harness",
-  "userConfig": {
-    "profile": {
-      "type": "file",
-      "title": "codex-gate profile 경로",
-      "description": "consumer repo의 codex-gate profile(도메인 delta) 파일 경로. 예: <repo>/.claude/codex-gate.profile",
-      "required": true
-    }
-  }
+  "repository": "https://github.com/nebydu/monitoring-harness"
 }
