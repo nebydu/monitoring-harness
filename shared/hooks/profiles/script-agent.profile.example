@@ -5,7 +5,7 @@
 # (동등성 매핑은 ../equivalence.md 참고)
 #
 # 사용(확정 표준): consumer repo의 convention 경로 ${CLAUDE_PROJECT_DIR}/.claude/codex-gate.profile 로
-#       복사해 두면 플러그인이 자동 발견·로드한다(별도 설정/userConfig 불요). 절차는 ../../docs/installation.md.
+#       복사해 두면 플러그인이 자동 발견·로드한다(별도 설정/userConfig 불요). 절차는 ../../../docs/installation.md.
 #       (이 .example는 템플릿이다. script-agent는 이미 plugin으로 전환됨 — ../h2b-validation.md 참고.)
 
 # ── 트리거 경로 (script-agent Go 코드) ────────────────────────────────────
