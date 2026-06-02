@@ -2,10 +2,12 @@
 
 monitoring-harness 플러그인의 설치/활성화/구성/업데이트(sync)/버전 정책/rollback을 정리한다.
 
+> **적용 범위**: 이 플러그인은 **런타임(코드 실행) 하네스 전용**이다.
 > **현재 상태(롤아웃 완료)**: **script-agent**(`f1092e3`)·**hub**(`cb347a9`)는 이 플러그인으로 전환 완료.
-> **monitoring-meta는 전환하지 않는다**(H4 A안 — 자체 gate가 상위집합이라 전환이 곧 회귀,
-> [`h4-meta-readiness.md`](h4-meta-readiness.md)). 아래 절차는 sa/hub가 따른 적용 표준이며, 신규 consumer
-> 적용 시에도 동일하게 쓴다.
+> **monitoring-meta는 범주 외**라 적용하지 않는다 — 코드 미실행·spec 판정 도메인이고 그 gate는 공통
+> 골격의 상위집합이라, 드리프트 예외가 아니라 애초에 대상이 아니다(H4,
+> [`h4-meta-readiness.md`](h4-meta-readiness.md)). 아래 절차는 sa/hub가 따른 적용 표준이며, 신규 consumer가
+> **런타임 하네스라면** 동일하게 쓴다.
 
 ## 0. 구성 개요 (wiring 표준)
 

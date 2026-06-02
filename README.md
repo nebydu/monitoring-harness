@@ -10,17 +10,26 @@
 `CLAUDE.md` 코어 섹션, agent scaffold)는 사실상 같은 코드를 손으로 세 번 유지하면서 **drift**가
 쌓인다. 이 repo는 그 공통부를 plugin/shared로 끌어올려 **drift를 줄이는 것**을 목표로 한다.
 
-## 현재 상태: H4 완료 — script-agent·hub 전환, meta는 예외
+## 적용 범위: 런타임(코드 실행) 하네스 전용
+
+이 플러그인의 대상은 **코드를 실행하는 런타임 하네스**다 — Stop 시 변경 코드를 Codex로 리뷰하는
+codex-gate를 공통화한다. **script-agent·hub가 이 범주**이고, 둘 다 전환 완료했다.
+**monitoring-meta는 코드를 실행하지 않고 spec 정합성을 판정**하는 다른 범주라, 처음부터 적용 대상이
+아니다(드리프트 "예외"가 아니라 범주 경계 — 아래 참고).
+
+## 현재 상태: H4 완료 — 런타임 하네스(sa·hub) 전환 완료
 
 - **진행 완료**: H0 부트스트랩/설계 → H1 공통 스키마 1부 → H2-A codex-gate 공통 골격 →
-  H5 plugin packaging → **H2-B script-agent cutover** → **H3 hub cutover** → **H4 meta 판단(NO-GO)**.
+  H5 plugin packaging → **H2-B script-agent cutover** → **H3 hub cutover** → **H4 meta 범주 판단**.
 - **플러그인은 설치 가능한 형태**다(`.claude-plugin/marketplace.json` + `plugin.json` + `hooks/`).
   공통 골격 `codex-gate-core.sh`, 공통 스키마, codex-gate 저작 skill을 제공한다.
 - **script-agent·hub는 plugin으로 전환 완료**(script-agent `f1092e3`, hub `cb347a9` — native
   `.claude/hooks/codex-gate.sh` 삭제, convention profile 커밋, plugin codex-gate가 Stop 게이트).
-- **monitoring-meta는 전환하지 않는다(A안 확정)**. meta gate는 공통 골격의 상위집합(콘텐츠 캐싱·
-  2-모드 프롬프트 등)이라 전환이 곧 회귀다. meta는 자체 gate를 유지하며 **drift 관리의 명시적 예외**다
-  (근거: [`docs/h4-meta-readiness.md`](docs/h4-meta-readiness.md)). 공통화하려면 core v2 확장(B안, 후속).
+- **monitoring-meta는 적용 대상이 아니다(범주 외)**. meta는 코드 미실행·spec 판정 도메인이고, 그
+  gate는 공통 골격의 상위집합(콘텐츠 캐싱·2-모드 프롬프트 등)으로 진화해 있다. 즉 meta는 *드리프트
+  관리에 실패한 예외*가 아니라, 애초에 이 런타임 하네스 플러그인의 **범주가 아닌** 산출물이다
+  (근거: [`docs/h4-meta-readiness.md`](docs/h4-meta-readiness.md)). meta까지 정식 통합이 **필요해질 때만**
+  core v2 확장(B안, 후속)을 검토한다.
 - 설치/적용/업데이트 절차는 [`docs/installation.md`](docs/installation.md) 참고.
 
 ## 적용 원칙
@@ -33,8 +42,8 @@
 
 ## 당장 사용법
 
-> script-agent·hub는 적용 완료. **monitoring-meta 적용은 사람 확인 게이트(H4)를 거쳐** 판단한다.
-> 임의로 일괄 적용하지 말 것.
+> 대상은 **런타임 하네스**다. script-agent·hub는 적용 완료. **monitoring-meta는 범주 외**라 적용하지
+> 않는다(H4). 새 consumer가 코드 실행 하네스라면 동일 절차로 적용한다.
 
 설치/구성/업데이트는 [`docs/installation.md`](docs/installation.md)를 따른다.
 
