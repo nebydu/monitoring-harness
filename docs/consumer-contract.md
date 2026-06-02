@@ -78,9 +78,9 @@ version 해석 순서: `plugin.json`의 `version` → marketplace entry `version
 
 - **explicit semver**(`plugin.json`에 `version` 고정): consumer는 **version을 bump해야만** 업데이트를
   받는다. hook만 고쳐 push하고 bump를 빠뜨리면 `/plugin update`가 "이미 최신"으로 처리해 옛 hook이
-  유지된다. → **안정 릴리스(H4 이후 정식 채택)** 용.
-- **commit-SHA**(`version` 생략): **커밋마다** 새 버전으로 취급돼 매 커밋이 update 대상. → **빠른 반복
-  단계(H2~H4)** 에 적합하며, 현재 H2-B~H4 rollout 표준이다.
+  유지된다. → **정식 릴리스/외부 배포** 용(전환은 미결 선택).
+- **commit-SHA**(`version` 생략): **커밋마다** 새 버전으로 취급돼 매 커밋이 update 대상. → 빠른 골격
+  전파에 적합하며, **현행 채택 방식**이다(롤아웃 완료 후에도 내부 도구로서 유지).
 
 > 현재 `plugin.json`/marketplace entry에는 `version`을 두지 않는다. H5 packaging에서 commit-SHA 방식을
 > rollout 표준으로 채택했기 때문이다. 정식 릴리스로 전환할 때만 explicit semver를 다시 도입하고,
