@@ -1,3 +1,8 @@
+# harness repo 자체 dev 환경 설정 (플러그인 산출물 아님 — statusline, Codex TUI 등 개인 설정)
+# 플러그인 deliverable은 repo 루트(.claude-plugin/, hooks/, shared/, skills/, docs/)에 있다.
+.claude/
+.codex/
+
 # IDE
 .idea/
 .vscode/
