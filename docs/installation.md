@@ -2,9 +2,10 @@
 
 monitoring-harness 플러그인의 설치/활성화/구성/업데이트(sync)/버전 정책/rollback을 정리한다.
 
-> **현재 상태**: **script-agent는 이 플러그인으로 전환 완료**(H2-B, `f1092e3`). hub/monitoring-meta는
-> **일괄 전환하지 않는다** — 적용 여부는 단계적 게이트(H3 → H4)로 판단한다. 아래 절차는 그 적용 표준이며,
-> script-agent가 이 절차의 첫 적용 사례다.
+> **현재 상태(롤아웃 완료)**: **script-agent**(`f1092e3`)·**hub**(`cb347a9`)는 이 플러그인으로 전환 완료.
+> **monitoring-meta는 전환하지 않는다**(H4 A안 — 자체 gate가 상위집합이라 전환이 곧 회귀,
+> [`h4-meta-readiness.md`](h4-meta-readiness.md)). 아래 절차는 sa/hub가 따른 적용 표준이며, 신규 consumer
+> 적용 시에도 동일하게 쓴다.
 
 ## 0. 구성 개요 (wiring 표준)
 
@@ -75,15 +76,16 @@ push해도 그 자체로는 consumer에 반영되지 않는다.
 version은 "업데이트 여부"를 정하는 cache key다(해석 순서: plugin.json `version` → marketplace entry
 `version` → git commit SHA → unknown).
 
-- **현재(게이트 롤아웃 단계, H2-B~H4): commit-SHA 방식 채택.** `plugin.json`/marketplace에 `version`을
-  **두지 않는다**. → harness에 커밋이 올라갈 때마다 새 버전으로 취급되어, 시험 consumer가
-  `/plugin update`로 즉시 최신 골격을 받는다(빠른 반복에 적합).
-- **안정 릴리스(H4 이후 정식 채택 시): explicit semver로 전환.** `plugin.json`에 `version`을 고정하고,
-  변경 전파가 필요할 때마다 **반드시 bump**한다(bump 없는 커밋은 전파되지 않음 — 대표적 함정).
-  semver 규약(MAJOR/MINOR/PATCH) 준수 + `CHANGELOG.md` 권장.
+- **현행: commit-SHA 방식.** `plugin.json`/marketplace에 `version`을 **두지 않는다**. → harness에 커밋이
+  올라갈 때마다 새 버전으로 취급되어 consumer가 `/plugin update`로 즉시 최신 골격을 받는다. 롤아웃이
+  끝난 지금도(sa·hub 전환 완료) 내부 도구로서 이 방식을 유지한다 — 골격 수정의 무마찰 전파가 이점.
+- **선택: explicit semver 전환(미결 결정).** 정식 릴리스/외부 배포로 가면 `plugin.json`에 `version`을
+  고정하고, 전파가 필요할 때마다 **반드시 bump**한다(bump 없는 커밋은 전파되지 않음 — 대표적 함정).
+  semver 규약(MAJOR/MINOR/PATCH) + `CHANGELOG.md` 권장. 전환 시점·필요성은 운영자 판단.
 
-> 주의: H0~H1에서 manifest에 있던 `version: 0.1.0`은 H5에서 **제거**했다(commit-SHA 채택). 정식
-> 릴리스 시 다시 명시한다.
+> 참고: H0~H1 manifest의 `version: 0.1.0`은 H5에서 제거했다(commit-SHA 채택). semver 전환 시 다시 명시.
+> 현재 sa·hub 설치는 각자 설치 시점의 commit-SHA에 pin되어 있어, 골격 변경은 각 repo에서
+> `/plugin update`로 받는다.
 
 ## 5. rollback
 
@@ -101,8 +103,9 @@ version은 "업데이트 여부"를 정하는 cache key다(해석 순서: plugin
 - **수행(H2-B)**: 샌드박스 런타임 동등성(원본 gate vs plugin 경로, pass/fail/parse_error/skip 일치) +
   convention profile 해석(인자/무인자/부재) — [`../shared/hooks/h2b-validation.md`](../shared/hooks/h2b-validation.md).
   project scope 설치도 수행(enabledPlugins 기록 확인).
-- **미검증(재시작 필요 → 사용자 세션)**: Windows Git Bash shim 경유 라이브 Stop hook 발화,
-  `codex exec` 실연동. native Stop hook 비활성(중복 제거)은 재시작·검증 후 수행한다.
+- **적용·라이브 검증(완료)**: script-agent·hub 모두 cutover 완료(native Stop hook 비활성 포함),
+  **hub는 라이브 Stop 동작 테스트 완료**. Windows Git Bash shim 경유 발화·`codex exec` 실연동이
+  실환경에서 확인됨.
 
 참고: 플러그인 일반 동작은 [Claude Code 플러그인 문서](https://code.claude.com/docs/en/plugins),
 sync/버전 상세는 [plugins-reference](https://code.claude.com/docs/en/plugins-reference).

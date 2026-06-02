@@ -1,6 +1,6 @@
 {
   "name": "monitoring-harness",
-  "description": "monitoring repos(hub/script-agent/monitoring-meta)용 shared Claude Code/Codex harness plugin. Codex gate 공통 골격·공통 스키마·codex-gate 저작 skill을 제공하고, 도메인 delta는 consumer profile로 주입한다. consumer 적용은 단계적 게이트(H2-B~)로 진행한다.",
+  "description": "monitoring repos용 shared Claude Code/Codex harness plugin. Codex gate 공통 골격·공통 스키마·codex-gate 저작 skill을 제공하고, 도메인 delta는 consumer profile(.claude/codex-gate.profile)로 주입한다. script-agent·hub 적용. (monitoring-meta는 자체 gate 유지.)",
   "author": {
     "name": "nebydu"
   },
