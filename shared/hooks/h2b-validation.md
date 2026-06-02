@@ -40,8 +40,31 @@ claude plugin install monitoring-harness@monitoring-harness --scope project \
 # 검증: claude plugin list  /  대표 변경에 대해 Stop 동작이 위 표와 동일한지 확인
 ```
 
-> **현재 상태**: consumer profile은 script-agent에 스테이징(미추적)됐고, 라이브 활성화는 아직
-> 하지 않았다. 기존 `.claude/hooks/codex-gate.sh`가 계속 source of execution이다.
+### staging install 실행 결과 (project scope, 수행함)
+
+`claude plugin marketplace add` + `claude plugin install --scope project --config profile=...` 실행됨.
+
+| 항목 | 저장 위치 | 비고 |
+|---|---|---|
+| marketplace 등록 | user settings `extraKnownMarketplaces` | `directory` 소스 = harness repo |
+| `enabledPlugins` | **script-agent `.claude/settings.json` (추적됨)** | 설치 시 JSON 재직렬화(cosmetic) 동반 |
+| `pluginConfigs.profile` | **user settings (per-user)** | 절대경로 `C:/.../script-agent/.claude/codex-gate.profile` |
+| Version | `89cc7fee7007` (commit-SHA) | 버전 정책과 일치 |
+
+**활성화 안 됨(재시작 필요)**: 본 세션에선 hook이 아직 안 뜬다. 기존 `.claude/hooks/codex-gate.sh`가
+계속 source of execution.
+
+### project scope에서 드러난 packaging gotcha (H3 전 해결 필요)
+
+1. **enabledPlugins(project, 공유) ↔ profile config(user, per-user) 분리**: 협업자가 script-agent를
+   clone하면 플러그인은 enabled지만 profile config는 없어, 그들 세션에서 hook이 profile 미발견으로
+   exit 2(Stop 차단)된다. project 공유에는 profile 주입을 **project 차원**으로 둘 방법이 필요.
+2. **절대경로**: profile 경로가 머신 종속(`C:/...`). 공유하려면 상대/프로젝트 변수 기반 경로가 필요.
+3. **중복 게이트**: 재시작 후 native Stop hook + plugin Stop hook이 동시에 뜬다(이중 Codex 호출).
+   plugin 동작을 재시작 후 확인한 뒤 native Stop hook을 비활성해야 한다.
+
+> 따라서 script-agent `.claude/settings.json` 변경은 **아직 커밋하지 말 것**(위 1~3 미해결 상태로
+> 공유되면 협업자 Stop이 깨진다). 단일 머신·단일 사용자 trial 검증 용도로만 둔다.
 
 ## rollback
 
