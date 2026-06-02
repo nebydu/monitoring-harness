@@ -10,16 +10,16 @@
 `CLAUDE.md` 코어 섹션, agent scaffold)는 사실상 같은 코드를 손으로 세 번 유지하면서 **drift**가
 쌓인다. 이 repo는 그 공통부를 plugin/shared로 끌어올려 **drift를 줄이는 것**을 목표로 한다.
 
-## 현재 상태: H2-B 완료 — script-agent 전환됨 (hub/meta는 게이트)
+## 현재 상태: H3 완료 — script-agent·hub 전환됨 (meta는 게이트)
 
 - **진행 완료**: H0 부트스트랩/설계 → H1 공통 스키마 1부 → H2-A codex-gate 공통 골격 →
-  H5 plugin packaging(마켓플레이스·설치/업데이트 가이드) → **H2-B script-agent cutover**.
+  H5 plugin packaging → **H2-B script-agent cutover** → **H3 hub cutover**.
 - **플러그인은 설치 가능한 형태**다(`.claude-plugin/marketplace.json` + `plugin.json` + `hooks/`).
   공통 골격 `codex-gate-core.sh`, 공통 스키마, codex-gate 저작 skill을 제공한다.
-- **script-agent는 plugin으로 전환 완료**(`f1092e3` — native `.claude/hooks/codex-gate.sh` 삭제,
-  convention profile 커밋, plugin codex-gate가 Stop 게이트의 source of execution).
-- **hub/monitoring-meta는 미적용**. 기존 `.claude/`가 계속 source of execution이며, 적용 여부는
-  H3/H4 사람 확인 게이트에서 판단한다.
+- **script-agent·hub는 plugin으로 전환 완료**(script-agent `f1092e3`, hub `cb347a9` — native
+  `.claude/hooks/codex-gate.sh` 삭제, convention profile 커밋, plugin codex-gate가 Stop 게이트).
+- **monitoring-meta는 미적용**. 기존 `.claude/`가 계속 source of execution이며, 적용 여부는
+  H4 사람 확인 게이트에서 판단한다(meta는 3역할·코드 미실행 등 특성이 달라 별도 검토).
 - 설치/적용/업데이트 절차는 [`docs/installation.md`](docs/installation.md) 참고.
 
 ## 적용 원칙
@@ -32,8 +32,8 @@
 
 ## 당장 사용법
 
-> script-agent는 적용 완료. **hub/monitoring-meta 적용은 사람 확인 게이트(H3/H4)를 거쳐 단계적으로**
-> 진행한다. 임의로 일괄 적용하지 말 것.
+> script-agent·hub는 적용 완료. **monitoring-meta 적용은 사람 확인 게이트(H4)를 거쳐** 판단한다.
+> 임의로 일괄 적용하지 말 것.
 
 설치/구성/업데이트는 [`docs/installation.md`](docs/installation.md)를 따른다.
 

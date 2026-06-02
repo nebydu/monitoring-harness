@@ -62,7 +62,12 @@ hub 레이아웃 모사 repo에서 원본 hub gate vs plugin(core + `hub.profile
 - **중복 게이트**: 전환 시 script-agent와 동일하게 native Stop hook 비활성 필요(cutover 절차). 순서:
   설치 → `/plugin update` → 재시작·검증 → native hook 비활성 → 커밋.
 
-## 5. 권고: **GO** (단, 실제 적용은 사람 결정)
+## 5. 권고: **GO** → 적용 완료 (`cb347a9`)
+
+> **적용됨**: 사람 승인 후 hub를 plugin으로 전환 완료(`cb347a9`) — project scope 설치,
+> `hub/.claude/codex-gate.profile` 커밋, native `codex-gate.sh` 삭제, settings.json Stop hook 제거
+> (PreToolUse 유지). 라이브 Stop 발화는 재시작 후 적용. 아래는 권고 당시 근거.
+
 
 hub는 script-agent와 동일한 구조라 **clean 후보**다. 공통 골격이 hub gate를 완전히 재현함을 실증했고,
 구조적 갭·기능 회귀 요인이 없으며, project-scope gotcha는 이미 해결됐다. cosmetic 변이 2건은 무해(1건은
