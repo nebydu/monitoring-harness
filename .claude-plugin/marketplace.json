@@ -3,12 +3,12 @@
   "owner": {
     "name": "nebydu"
   },
-  "description": "monitoring repos(hub/script-agent/monitoring-meta)용 shared Claude Code/Codex harness 마켓플레이스",
+  "description": "Shared Claude Code/Codex runtime harness marketplace for monitoring repos.",
   "plugins": [
     {
       "name": "harness",
       "source": "./",
-      "description": "Codex gate 공통 골격·공통 스키마·codex-gate 저작 skill을 제공하는 shared harness 플러그인. 도메인 delta는 consumer profile로 주입한다."
+      "description": "Shared harness plugin that provides the common codex-gate runner, shared schema, and codex-gate authoring skill. Domain-specific values are injected through consumer profiles."
     }
   ]
 }
