@@ -50,7 +50,7 @@ hub 레이아웃 모사 repo에서 원본 hub gate vs plugin(core + `hub.profile
 | pom.xml 변경(트리거) | `0\|pass` | `0\|pass` | ✅ |
 
 → 공통 골격 + hub profile이 hub 현행 gate를 **완전히 재현**한다. 구조적 갭 없음.
-(profile 예시: [`../shared/hooks/profiles/hub.profile.example`](../shared/hooks/profiles/hub.profile.example))
+(profile 예시: [`../../shared/hooks/profiles/hub.profile.example`](../../shared/hooks/profiles/hub.profile.example))
 
 ## 4. 리스크 / 주의
 
@@ -78,9 +78,9 @@ hub는 script-agent와 동일한 구조라 **clean 후보**다. 공통 골격이
 
 ## 6. 적용 시 절차 (요약, 적용 결정 시)
 
-[`installation.md`](installation.md) 표준을 hub에 적용:
+[`../installation.md`](../installation.md) 표준을 hub에 적용:
 1. hub repo에서 `claude plugin marketplace add` + `install --scope project`(--config 불필요, convention).
-2. `hub/.claude/codex-gate.profile` 작성([`hub.profile.example`](../shared/hooks/profiles/hub.profile.example) 복사) + 커밋.
+2. `hub/.claude/codex-gate.profile` 작성([`hub.profile.example`](../../shared/hooks/profiles/hub.profile.example) 복사) + 커밋.
 3. `/plugin update` → 재시작 → 대표 변경(src/main, pom.xml)에서 Stop 동등 동작 확인.
 4. native `.claude/hooks/codex-gate.sh` 삭제 + settings.json Stop hook 제거(PreToolUse 유지) → 커밋.
 

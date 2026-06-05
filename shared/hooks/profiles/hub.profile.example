@@ -3,7 +3,7 @@
 # hub의 현행 .claude/hooks/codex-gate.sh 동작을 재현하는 도메인 delta 예시다.
 # H3(hub 적용 여부 판단)의 readiness 근거로 만든 것이며, hub repo는 수정하지 않는다.
 # hub 적용이 결정되면 hub repo의 convention 경로(.claude/codex-gate.profile)로 복사해 쓴다.
-# (동등성 실증: ../h3-hub-readiness.md)
+# (동등성 실증: ../../../docs/archive/h3-hub-readiness.md)
 
 # ── 트리거 경로 (hub Java/Spring 비즈니스 코드) ───────────────────────────
 CODEX_GATE_TRIGGER_GLOBS=( "src/main/*" "src/test/*" "pom.xml" )

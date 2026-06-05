@@ -32,7 +32,7 @@ Codex gate 출력 계약인 공통 `codex-schema.json` **1부**가 놓이는 디
 }
 ```
 
-→ 설계 근거: [`../../docs/design.md`](../../docs/design.md) C3.
+→ 설계 근거: [`../../docs/archive/design-h0.md`](../../docs/archive/design-h0.md) C3.
 
 ## 다음 단계
 

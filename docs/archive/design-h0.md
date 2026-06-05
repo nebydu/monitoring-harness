@@ -38,7 +38,7 @@
 | build/test/run 명령 | (Maven 계열) | (Go 계열) | (코드 실행 없음) |
 
 > 주입점은 **plugin이 결정하지 않는다.** consumer가 profile로 주입한다
-> (→ [`consumer-contract.md`](consumer-contract.md)).
+> (→ [`../consumer-contract.md`](../consumer-contract.md)).
 
 ---
 
@@ -68,10 +68,10 @@
 (`verdict` / `critical_issues` / `spec_violations` / `summary`, `additionalProperties: false`).
 단 줄바꿈은 다르다 — hub만 CRLF(484B), script-agent·monitoring-meta는 LF(462B)다. CR을 제거한
 정규화 기준에서 세 repo 해시가 모두 일치한다(엄밀한 byte-for-byte 동일은 아님). H1 검증 결과는
-[`../shared/schemas/equivalence-check.md`](../shared/schemas/equivalence-check.md) 참고.
+[`../../shared/schemas/equivalence-check.md`](../../shared/schemas/equivalence-check.md) 참고.
 
 → **공통 1부 후보**(H1에서 LF 정본으로 확정). H0에서는 복사하지 않고 위치만 예약했고, 실제 공통화는
-H1에서 다뤘다 (→ [`../shared/schemas/README.md`](../shared/schemas/README.md)).
+H1에서 다뤘다 (→ [`../../shared/schemas/README.md`](../../shared/schemas/README.md)).
 
 ---
 
@@ -111,7 +111,7 @@ hook을 작성·수정할 때 참고하는 레시피. 알려진 함정을 명시
 - Windows Git Bash vs WSL bash (PATH 충돌, shim 필요)
 - stdout JSON encoding (cp949 vs UTF-8)
 
-→ [`../skills/codex-gate-authoring/SKILL.md`](../skills/codex-gate-authoring/SKILL.md)
+→ [`../../skills/codex-gate-authoring/SKILL.md`](../../skills/codex-gate-authoring/SKILL.md)
 
 ### 공유 도메인 참조 데이터 skill (조건부)
 
@@ -127,4 +127,4 @@ hook을 작성·수정할 때 참고하는 레시피. 알려진 함정을 명시
    phase 불변식, 식별자, build command.
 2. **plugin은 도메인 결정을 하지 않는다.** 공통 골격은 "어떻게 실행하는가"만 제공하고,
    "무엇이 위반인가"는 consumer가 정한다.
-3. **consumer repo 적용은 H0 범위 밖이다.** (→ [`milestones.md`](milestones.md))
+3. **consumer repo 적용은 H0 범위 밖이다.** (→ [`../milestones.md`](../milestones.md))
