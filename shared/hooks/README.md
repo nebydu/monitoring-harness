@@ -28,6 +28,11 @@ codex-gate Stop hook의 **공통 골격**(C1)이 놓이는 디렉터리다.
 공통 골격은 baseline 트리거, stop-loop·pipefail 가드, 리뷰 입력 조립, read-only `codex exec`,
 python JSON 파싱, verdict 분기, escalation을 담당한다(C1). 트리거 경로·프롬프트 등은 **주입만** 받는다.
 
+> **소비자 opt-in 모델**: plugin Stop hook은 모든 repo에 글로벌로 등록되지만, convention 경로
+> `<repo>/.claude/codex-gate.profile`이 **없는 repo는 자동으로 skip된다**(entry가 source 전에 `exit 0`).
+> 즉 profile을 두지 않은 repo의 세션 종료를 막지 않는다. 게이팅을 받으려면 그 repo에 profile을 두면 된다
+> (opt-in). 단 `CODEX_GATE_PROFILE`을 명시 지정했는데 그 파일이 없으면 오설정으로 보고 `exit 2`로 차단한다.
+
 > Windows에서는 Git Bash shim(`git-bash.cmd`)으로 WSL bash 충돌을 회피한다. 저작 주의사항은
 > [`../../skills/codex-gate-authoring/SKILL.md`](../../skills/codex-gate-authoring/SKILL.md) 참고.
 

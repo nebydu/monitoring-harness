@@ -13,10 +13,22 @@ set -euo pipefail
 # 1) consumer profile 경로 결정 (우선순위: override env → 인자(convention) → CLAUDE_PROJECT_DIR convention)
 #    - 기본은 consumer repo의 convention 위치다. per-user config나 절대경로가 필요 없어 협업자 공유에 안전하다.
 #    - 비표준 위치를 쓰려면 CODEX_GATE_PROFILE 환경변수로만 덮어쓴다(테스트/예외용).
-PROFILE="${CODEX_GATE_PROFILE:-${1:-${CLAUDE_PROJECT_DIR:-}/.claude/codex-gate.profile}}"
+#
+#    profile 부재 처리 — opt-in 소비자 모델:
+#      - convention 경로(인자/CLAUDE_PROJECT_DIR)에 profile이 없으면 = 이 repo는 plugin codex-gate
+#        소비자가 아님 → 조용히 skip(exit 0). Stop hook은 글로벌 발동이므로, 소비자가 아닌 repo의
+#        세션 종료를 막지 않는다.
+#      - 단, 사용자가 CODEX_GATE_PROFILE을 명시 지정했는데 그 파일이 없으면 = 진짜 오설정/오타
+#        → 기존대로 차단(exit 2).
+EXPLICIT_PROFILE="${CODEX_GATE_PROFILE:-}"
+PROFILE="${EXPLICIT_PROFILE:-${1:-${CLAUDE_PROJECT_DIR:-}/.claude/codex-gate.profile}}"
 if [ -z "$PROFILE" ] || [ ! -f "$PROFILE" ]; then
-  echo "[codex-gate] 구성 오류: consumer profile을 찾지 못함 ('$PROFILE'). <repo>/.claude/codex-gate.profile 존재를 확인하세요." >&2
-  exit 2
+  if [ -n "$EXPLICIT_PROFILE" ]; then
+    echo "[codex-gate] 구성 오류: 지정한 CODEX_GATE_PROFILE을 찾지 못함 ('$EXPLICIT_PROFILE'). 경로를 확인하세요." >&2
+    exit 2
+  fi
+  # convention 경로에 profile 없음 = 소비자 아님 → 조용히 skip(노이즈 없이 Stop 정상 진행)
+  exit 0
 fi
 
 # 2) plugin 자원 위치 — 런타임에는 CLAUDE_PLUGIN_ROOT/CLAUDE_PLUGIN_DATA가 환경변수로 주입된다.
