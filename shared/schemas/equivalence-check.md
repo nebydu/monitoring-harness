@@ -33,10 +33,10 @@ tr -d '\r' < <repo>/.claude/codex-schema.json | sha256sum
 
 ## 공통 1부 정책
 
-- 공통 1부는 **LF**를 정본으로 한다(script-agent·monitoring-meta와 byte-for-byte 일치).
+- 공통 1부는 **LF**를 기준으로 한다(script-agent·monitoring-meta와 byte-for-byte 일치).
 - hub의 CRLF는 줄바꿈 차이일 뿐 스키마 의미 차이가 아니다. consumer 적용 단계(H2~)에서 hub를 공통
   1부로 전환할 때 EOL을 LF로 정규화하면 hub 사본과도 내용상 동등해진다.
-- 정본 EOL이 LF임을 보장하기 위해, schema 파일에는 `.gitattributes`로 `*.json text eol=lf`를 둔다.
+- 기준 EOL이 LF임을 보장하기 위해, schema 파일에는 `.gitattributes`로 `*.json text eol=lf`를 둔다.
 
 ## H1 범위 확인 (하지 않은 것)
 

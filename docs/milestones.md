@@ -19,12 +19,12 @@
 ## H1 — C3 schema 공통화 후보 구현 (consumer 적용 없음) (완료)
 
 - **목표**: 세 repo 동일한 `codex-schema.json`을 `shared/schemas/`에 **공통 1부**로 둔다.
-- **산출물**: `shared/schemas/codex-schema.json`(LF 정본) + `shared/schemas/equivalence-check.md`
+- **산출물**: `shared/schemas/codex-schema.json`(LF 기준) + `shared/schemas/equivalence-check.md`
   (동등성 검증 노트) + 루트 `.gitattributes`(`*.json text eol=lf`).
 - **하지 않는 것**: consumer가 이 공통 스키마를 **참조하도록 바꾸지 않는다**(여전히 각자 사본 사용).
 - **사람 확인 게이트**: 공통 스키마가 세 repo 사본과 동등함을 확인.
 - **검증 결과**: 내용은 세 repo 동일(CR 제거 정규화 sha256 일치). 단, hub만 CRLF(484B), 나머지 둘은
-  LF(462B). 공통 1부는 LF를 정본으로 채택. consumer 무수정(read-only 비교).
+  LF(462B). 공통 1부는 LF를 기준으로 채택. consumer 무수정(read-only 비교).
 - **rollback 기준**: `shared/schemas/`·`.gitattributes`만 추가됨 → 파일 삭제로 원복. consumer 무영향.
 
 ---

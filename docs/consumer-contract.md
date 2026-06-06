@@ -20,7 +20,7 @@
 |---|---|---|
 | `trigger_paths` | Codex 리뷰를 발동시키는 변경 경로 | hub `src/main/*` / sa `cmd/*`,`*.go` / meta `adr/*.md` |
 | `skip_paths` | 발동에서 제외할 경로 | `.claude/*`, `docs/*`, `analysis/*` 등 |
-| `codex_prompt` | Codex에 줄 리뷰 지시문 | Java review / Go+Kafka 불변식 / spec 정합성 |
+| `codex_prompt` | Codex에 줄 리뷰 지시문 | Java review / Go+Kafka 불변식 / spec 일관성 |
 | `target_paths` | 리뷰 입력으로 모을 대상 경로 | 비즈니스 코드 / spec 문서 |
 | `build_test_run` | 빌드·테스트·실행 명령 | Maven 계열 / Go 계열 / (없음) |
 
