@@ -141,5 +141,9 @@ shared/schemas/proposal-review-schema.json   # 출력 schema (codex-schema.json 
 - [x] README에서 runtime gate / decision-review command 분리 설명
 - [x] commands / runner / prompt / schema 구현 (§5) — 가드 4종 + 실연동 2회 스모크 통과
 - [x] shell 실행 경로 1회 실험 → 호출 방식 확정 (§6) — **소스 기준 완료**, 배포 캐시 기준 재확인만 남음
-- [ ] consumer 1곳(hub/script-agent/meta 중)에 profile 두고 실전 1회 → prompt/schema 조정
+- [x] consumer 1곳(hub/script-agent/meta 중)에 profile 두고 실전 1회 → prompt/schema 조정
+  — **meta 완료 (2026-06-07)**: `.claude/proposal-review.profile`(문맥 6개 + 통합본 발췌 원칙,
+  170KB라 상시 주입 제외). 실전 리뷰 verdict `revise`(medium) — Codex가 "profile 탐색이 미배포
+  a455246에 의존"하는 배포 공백을 정확히 지적(§6에서 발견한 함정과 동일 지점). 권고 반영해
+  profile에 적용 조건·drift 완화 DoD·dry-run 절차 주석 추가. prompt/schema 조정 필요 없음.
 - [x] `docs/proposal-review-strategy-draft.md` → archive 이동 (이 문서가 결정본)
