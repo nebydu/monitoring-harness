@@ -1,0 +1,30 @@
+{
+  "type": "object",
+  "properties": {
+    "verdict": {
+      "type": "string",
+      "enum": ["approve", "revise", "block"]
+    },
+    "critical_issues": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "missing_context": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "recommended_changes": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "confidence": {
+      "type": "string",
+      "enum": ["low", "medium", "high"]
+    },
+    "summary": {
+      "type": "string"
+    }
+  },
+  "required": ["verdict", "critical_issues", "missing_context", "recommended_changes", "confidence", "summary"],
+  "additionalProperties": false
+}

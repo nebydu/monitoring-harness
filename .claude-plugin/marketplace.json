@@ -8,7 +8,7 @@
     {
       "name": "harness",
       "source": "./",
-      "description": "Shared harness plugin that provides the common codex-gate runner, shared schema, and codex-gate authoring skill. Domain-specific values are injected through consumer profiles."
+      "description": "Shared harness plugin that provides the runtime codex-gate runner, the on-demand proposal-review command, shared schemas, and the codex-gate authoring skill. Domain-specific values are injected through consumer profiles."
     }
   ]
 }

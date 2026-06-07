@@ -116,13 +116,21 @@ shared/schemas/proposal-review-schema.json   # 출력 schema (codex-schema.json 
   - 편차 발견 시 → 기존 `git-bash.cmd` shim 경유로 통일
   - (이번 세션 관측: 이 머신의 Bash tool은 Git Bash로 동작 — 단 1대 관측이라 단정하지 않음.
     hook과 실행 경로가 다름: hook = harness가 cmd로 직접 spawn → shim 필수였음)
+  - **소스 기준 실험 완료 (2026-06-07)**: Bash tool에서 runner 전체 파이프라인(가드 4종 +
+    degraded/profile 실연동 `codex exec` 2회 + `--out` 아티팩트)을 Git Bash로 실행, 전부 통과.
+    같은 제안이 degraded에선 `revise`(medium), consumer-contract.md 문맥 주입 후엔 `block`(high,
+    사유 = H5 결정과 충돌)으로 판정 — verdict 경계가 의도대로 작동함을 실증.
+    **남은 것은 배포 캐시 경로(`${CLAUDE_PLUGIN_ROOT}` 치환) 기준 1회 재확인뿐.**
+  - 부수 관측: MSYS 경로 변환은 **argv로 넘어가는 경로만** Windows 경로로 변환한다.
+    python `-c` 스크립트 문자열 안에 박힌 `/tmp/...` 경로는 변환되지 않으므로, runner처럼
+    경로를 반드시 argv로 전달해야 한다(현 구현이 그렇게 함 — 유지할 것).
 
 ## 7. 후속 작업 (H6 체크리스트)
 
-- [ ] milestones.md에 H6 등록 ("decision-review command 추가 — scope 재해석 포함")
-- [ ] `plugin.json` description 2축 갱신 (§3 문안)
-- [ ] README에서 runtime gate / decision-review command 분리 설명
-- [ ] commands / runner / prompt / schema 구현 (§5)
-- [ ] shell 실행 경로 1회 실험 → 호출 방식 확정 (§6)
+- [x] milestones.md에 H6 등록 ("decision-review command 추가 — scope 재해석 포함")
+- [x] `plugin.json` description 2축 갱신 (§3 문안) — marketplace.json도 함께
+- [x] README에서 runtime gate / decision-review command 분리 설명
+- [x] commands / runner / prompt / schema 구현 (§5) — 가드 4종 + 실연동 2회 스모크 통과
+- [x] shell 실행 경로 1회 실험 → 호출 방식 확정 (§6) — **소스 기준 완료**, 배포 캐시 기준 재확인만 남음
 - [ ] consumer 1곳(hub/script-agent/meta 중)에 profile 두고 실전 1회 → prompt/schema 조정
-- [ ] `docs/proposal-review-strategy-draft.md` → archive 이동 (이 문서가 결정본)
+- [x] `docs/proposal-review-strategy-draft.md` → archive 이동 (이 문서가 결정본)
