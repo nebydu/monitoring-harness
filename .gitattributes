@@ -2,3 +2,7 @@
 *.json text eol=lf
 # 향후 공통 hook 골격(H2)도 LF 유지 — CRLF 시 shebang/파싱 깨짐 방지
 *.sh text eol=lf
+# consumer가 복사해 가는 profile 예시도 LF 고정 — CRLF로 checkout된 example을 복사하면
+# source 시 변수/glob 끝에 \r이 붙어 게이트가 조용히 무력화된다 (hub 950c2f3·meta 1306546과 동일 계열)
+*.profile text eol=lf
+*.example text eol=lf
