@@ -39,8 +39,11 @@ if [ -z "$PROPOSAL" ]; then
 fi
 
 # ── profile 로드 — 부재 시 degraded (조용히 skip하지 않는다) ───────────────
+# CLAUDE_PROJECT_DIR는 hook 컨텍스트 전용 주입 변수다 — command의 Bash tool 환경에는 없으므로
+# git toplevel로 fallback한다 (없으면 빈 값 → degraded). 배포 검증에서 발견된 함정(scope §6).
+PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || true)}"
 EXPLICIT_PROFILE="${PROPOSAL_REVIEW_PROFILE:-}"
-PROFILE="${EXPLICIT_PROFILE:-${CLAUDE_PROJECT_DIR:-}/.claude/proposal-review.profile}"
+PROFILE="${EXPLICIT_PROFILE:-${PROJECT_DIR:+$PROJECT_DIR/.claude/proposal-review.profile}}"
 CONTEXT_STATUS="none (no profile — degraded review)"
 PROPOSAL_REVIEW_POLICY=""
 PROPOSAL_REVIEW_CONTEXT_DOCS=()

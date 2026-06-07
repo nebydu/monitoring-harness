@@ -124,6 +124,15 @@ shared/schemas/proposal-review-schema.json   # 출력 schema (codex-schema.json 
   - 부수 관측: MSYS 경로 변환은 **argv로 넘어가는 경로만** Windows 경로로 변환한다.
     python `-c` 스크립트 문자열 안에 박힌 `/tmp/...` 경로는 변환되지 않으므로, runner처럼
     경로를 반드시 argv로 전달해야 한다(현 구현이 그렇게 함 — 유지할 것).
+  - **배포 캐시 기준 검증 완료 (2026-06-07, 캐시 `62b896287963`)**: 캐시된 runner 가드 +
+    codex-gate 회귀 3종 + 라이브 `/proposal-review` 호출(`${CLAUDE_PLUGIN_ROOT}` 치환 확인) 통과.
+    단 marketplace 소스 repo(harness 자신)에서는 `${CLAUDE_PLUGIN_ROOT}`가 캐시가 아니라
+    **로컬 repo 경로**로 치환된다(dev 모드) — consumer repo에서는 캐시 경로다.
+  - **라이브 검증에서 발견·수정한 함정**: `CLAUDE_PROJECT_DIR`는 **hook 컨텍스트 전용** 주입
+    변수다 — command가 쓰는 Bash tool 환경에는 없다. 초기 구현은 이 변수로만 convention 경로를
+    풀어 consumer에서 profile이 있어도 항상 degraded로 빠졌다. `git rev-parse --show-toplevel`
+    fallback으로 수정(runner). **교훈: hook 주입 변수를 command 경로에서 재사용할 때는 주입
+    여부를 반드시 실측할 것.**
 
 ## 7. 후속 작업 (H6 체크리스트)
 
