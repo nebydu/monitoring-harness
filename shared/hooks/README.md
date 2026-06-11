@@ -23,10 +23,27 @@ codex-gate Stop hook의 **공통 골격**(C1)이 놓이는 디렉터리다.
 | `CODEX_GATE_SKIP_MSG` (문자열) | | 코드 변경 없음 안내 메시지 |
 | `CODEX_GATE_SCHEMA` (경로) | | output-schema. 기본 `$CLAUDE_DIR/codex-schema.json` |
 | `CODEX_GATE_DATA_DIR` (경로) | | state/log 보존 위치. plugin 모델에선 `${CLAUDE_PLUGIN_DATA}` 권장 |
-| `CODEX_GATE_FAIL_LIMIT` / `CODEX_GATE_PARSE_FAIL_LIMIT` | | escalation 임계(기본 3 / 2) |
+| `CODEX_GATE_FAIL_LIMIT` / `CODEX_GATE_PARSE_FAIL_LIMIT` | | escalation 임계(기본 3 / 2, 도달 시 escalate) |
+| `CODEX_GATE_BASELINE_REF` (ref) | | 부트스트랩 신뢰 기준 ref. 기본 `origin/main` |
 
-공통 골격은 baseline 트리거, stop-loop·pipefail 가드, 리뷰 입력 조립, read-only `codex exec`,
-python JSON 파싱, verdict 분기, escalation을 담당한다(C1). 트리거 경로·프롬프트 등은 **주입만** 받는다.
+공통 골격은 검증 윈도우 BASE 결정, 트리거 가드, stop-loop·pipefail 가드, 리뷰 입력 조립, read-only
+`codex exec`, python JSON 파싱, verdict 분기, escalation을 담당한다(C1). 트리거 경로·프롬프트 등은
+**주입만** 받는다.
+
+## 검증 윈도우 (2026-06-11 — commit-window 사각지대 보완)
+
+종전 BASE=HEAD는 작업 트리 diff만 봐서 **같은 턴에 커밋하면 게이트가 우회**됐다. 이제 상태 파일의
+`verified_commit`(vc) 기준으로 **커밋분 + 작업 트리 + 미추적**을 모두 윈도우에 포함한다
+(meta `.claude/hooks/codex-gate.sh` reference 이식 — 설계·12라운드 리뷰 기록은
+`monitoring-meta/handoff/codex-gate-commit-window/codex-gate-commit-window-000-record.md`).
+
+- 통과 가능한 BASE 5종: `vc` / `merge-base`(rebase·amend) / `bootstrap-origin` /
+  `bootstrap-origin-mb`(diverged) / `empty-tree`(HEAD 없음). 그 외 `disconnected`·`no-baseline`은
+  **fail-closed(exit 2)** 차단 — 차단 이벤트는 `codex-gate-block.log`에 분리 기록.
+- vc 전진: 윈도우가 BASE..HEAD 전 구간을 커버하고 검증이 완료(트리거 0 skip / pass)된 경우만.
+  escalated(강제 통과)·차단·fail은 전진하지 않는다.
+- 상태 파일은 JSON(`cache_status` = gate_key 캐시 축 / `last_result` = 마지막 hook 결과 축 —
+  자동화는 `last_result`만 소비). 구버전 평문 state(`FAIL PARSE`)는 카운터를 승계해 자동 전환된다.
 
 > **소비자 opt-in 모델**: plugin Stop hook은 모든 repo에 글로벌로 등록되지만, convention 경로
 > `<repo>/.claude/codex-gate.profile`이 **없는 repo는 자동으로 skip된다**(entry가 source 전에 `exit 0`).
