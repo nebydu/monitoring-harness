@@ -35,7 +35,8 @@
 # ── 주입점 (선택, 기본값 있음) ────────────────────────────────────────────
 #   CODEX_GATE_SCHEMA         (경로)  output-schema. 기본 "$CLAUDE_DIR/codex-schema.json"
 #   CODEX_GATE_DATA_DIR       (경로)  state/log 보존 위치. 기본 "$CLAUDE_DIR"
-#                                     (plugin 모델에서는 ${CLAUDE_PLUGIN_DATA} 권장)
+#                                     (plugin 모델에서는 ${CLAUDE_PLUGIN_DATA} 권장. 주입 시
+#                                      repo별 하위 디렉터리 <data>/<repo명>/로 자동 분리)
 #   CODEX_GATE_FAIL_LIMIT     (정수)  fail 연속 허용 횟수. 기본 3 (도달 시 escalate)
 #   CODEX_GATE_PARSE_FAIL_LIMIT (정수) parse 실패 연속 허용 횟수. 기본 2 (도달 시 escalate)
 #   CODEX_GATE_BASELINE_REF   (ref)   부트스트랩 신뢰 기준 ref. 기본 "origin/main"
@@ -45,7 +46,15 @@ set -euo pipefail
 # ── 경로 ────────────────────────────────────────────────────────────────
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 CLAUDE_DIR="$REPO_ROOT/.claude"
-DATA_DIR="${CODEX_GATE_DATA_DIR:-$CLAUDE_DIR}"
+# data dir 주입(plugin 모델의 ${CLAUDE_PLUGIN_DATA}) 시 repo별 하위 디렉터리로 분리한다.
+# 이유: plugin data dir은 모든 소비 repo가 공유하는 단일 경로다 — verified_commit은 repo별 상태라
+# 미분리 시 한 repo의 vc가 다른 repo에서 "단절 이력"으로 오차단된다(레이아웃 = <data>/<repo명>/).
+# 미주입(repo-local $CLAUDE_DIR) 시에는 이미 repo 단위라 분리하지 않는다.
+if [ -n "${CODEX_GATE_DATA_DIR:-}" ]; then
+  DATA_DIR="${CODEX_GATE_DATA_DIR}/$(basename "$REPO_ROOT")"
+else
+  DATA_DIR="$CLAUDE_DIR"
+fi
 mkdir -p "$DATA_DIR"
 STATE_FILE="$DATA_DIR/.codex-gate-state"
 LOG_FILE="$DATA_DIR/codex-gate.log"
