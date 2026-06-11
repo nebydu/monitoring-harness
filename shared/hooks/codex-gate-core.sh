@@ -36,26 +36,55 @@
 #   CODEX_GATE_SCHEMA         (경로)  output-schema. 기본 "$CLAUDE_DIR/codex-schema.json"
 #   CODEX_GATE_DATA_DIR       (경로)  state/log 보존 위치. 기본 "$CLAUDE_DIR"
 #                                     (plugin 모델에서는 ${CLAUDE_PLUGIN_DATA} 권장. 주입 시
-#                                      repo별 하위 디렉터리 <data>/<repo명>/로 자동 분리)
+#                                      repo별 하위 디렉터리 <data>/<repo명>-<경로 hash8>/로 자동
+#                                      분리하고 .repo-path 메타데이터로 소유권 충돌을 감지)
 #   CODEX_GATE_FAIL_LIMIT     (정수)  fail 연속 허용 횟수. 기본 3 (도달 시 escalate)
 #   CODEX_GATE_PARSE_FAIL_LIMIT (정수) parse 실패 연속 허용 횟수. 기본 2 (도달 시 escalate)
 #   CODEX_GATE_BASELINE_REF   (ref)   부트스트랩 신뢰 기준 ref. 기본 "origin/main"
 #                                     (push된 이력 = 사람이 publish한 신뢰 기준 — 설계 결정 사항)
 set -euo pipefail
 
+# ── 1) 무한 Stop 루프 가드 — 모든 exit 2 경로보다 먼저 판정한다 ──────────
+# 주입점 검증·data dir 충돌 등 구성 오류는 exit 2(차단)다. 가드가 그 뒤에 있으면 오설정 시
+# stop_hook_active=true에서도 매번 차단되어 무한 stop 루프가 된다(2026-06-11 proposal-review 보완).
+# 오설정은 첫 stop(active=false)에서 exit 2로 반드시 한 번 노출된 뒤, 재발화에서는 종료를 허용한다.
+INPUT="$(cat)"
+STOP_ACTIVE="$(printf '%s' "$INPUT" | python -c '
+import sys, json
+try:
+    d = json.loads(sys.stdin.read())
+    print("1" if d.get("stop_hook_active") else "0")
+except Exception:
+    print("0")
+' 2>/dev/null || echo "0")"
+[ "$STOP_ACTIVE" = "1" ] && exit 0
+
 # ── 경로 ────────────────────────────────────────────────────────────────
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 CLAUDE_DIR="$REPO_ROOT/.claude"
 # data dir 주입(plugin 모델의 ${CLAUDE_PLUGIN_DATA}) 시 repo별 하위 디렉터리로 분리한다.
 # 이유: plugin data dir은 모든 소비 repo가 공유하는 단일 경로다 — verified_commit은 repo별 상태라
-# 미분리 시 한 repo의 vc가 다른 repo에서 "단절 이력"으로 오차단된다(레이아웃 = <data>/<repo명>/).
+# 미분리 시 한 repo의 vc가 다른 repo에서 "단절 이력"으로 오차단된다.
+# 키 = <repo명>-<repo 절대경로 sha256 앞 8자> — basename만 쓰면 같은 이름의 다른 repo가 state를
+# 공유해 동일 오차단이 재발한다. 구 레이아웃(<repo명>/ 또는 flat)은 소유권을 검증할 수 없어
+# 승계하지 않는다(fresh bootstrap — vc 공백은 baseline ref 부트스트랩이 안전하게 재검증).
 # 미주입(repo-local $CLAUDE_DIR) 시에는 이미 repo 단위라 분리하지 않는다.
 if [ -n "${CODEX_GATE_DATA_DIR:-}" ]; then
-  DATA_DIR="${CODEX_GATE_DATA_DIR}/$(basename "$REPO_ROOT")"
+  REPO_HASH8="$(printf '%s' "$REPO_ROOT" | python -c 'import hashlib, sys; print(hashlib.sha256(sys.stdin.buffer.read()).hexdigest()[:8])')"
+  DATA_DIR="${CODEX_GATE_DATA_DIR}/$(basename "$REPO_ROOT")-${REPO_HASH8}"
+  mkdir -p "$DATA_DIR"
+  # 소유권 메타데이터 — hash8 충돌(사실상 다른 repo가 같은 키로 매핑) 감지용. state 오공유는
+  # vc 오차단/오허용 둘 다 가능하므로 불일치 시 fail-closed로 차단한다(가드 뒤라 루프 안전).
+  REPO_META="$DATA_DIR/.repo-path"
+  if [ -f "$REPO_META" ] && [ "$(cat "$REPO_META")" != "$REPO_ROOT" ]; then
+    echo "[codex-gate] 구성 오류: data dir 소유권 충돌 — '$DATA_DIR'는 '$(cat "$REPO_META")' 소유인데 현재 repo는 '$REPO_ROOT'입니다. 두 repo의 CODEX_GATE_DATA_DIR를 분리하세요." >&2
+    exit 2
+  fi
+  [ -f "$REPO_META" ] || printf '%s' "$REPO_ROOT" > "$REPO_META"
 else
   DATA_DIR="$CLAUDE_DIR"
+  mkdir -p "$DATA_DIR"
 fi
-mkdir -p "$DATA_DIR"
 STATE_FILE="$DATA_DIR/.codex-gate-state"
 LOG_FILE="$DATA_DIR/codex-gate.log"
 ESC_LOG="$DATA_DIR/codex-gate-escalation.log"
@@ -218,18 +247,6 @@ match_any() { # file, glob...
   done
   return 1
 }
-
-# ── 1) 무한 Stop 루프 가드 ───────────────────────────────────────────────
-INPUT="$(cat)"
-STOP_ACTIVE="$(printf '%s' "$INPUT" | python -c '
-import sys, json
-try:
-    d = json.loads(sys.stdin.read())
-    print("1" if d.get("stop_hook_active") else "0")
-except Exception:
-    print("0")
-' 2>/dev/null || echo "0")"
-[ "$STOP_ACTIVE" = "1" ] && exit 0
 
 # ── 2) 검증 윈도우 BASE 결정 ─────────────────────────────────────────────
 # BASE 결정이 트리거 가드보다 먼저다: 단절/기준 없음 상태에서는 커밋분의 트리거 변경 여부 자체를

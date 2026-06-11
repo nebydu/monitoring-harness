@@ -22,7 +22,7 @@ codex-gate Stop hook의 **공통 골격**(C1)이 놓이는 디렉터리다.
 | `CODEX_GATE_PROMPT` (문자열) | ✔ | Codex 리뷰 지시문(도메인 전체) |
 | `CODEX_GATE_SKIP_MSG` (문자열) | | 코드 변경 없음 안내 메시지 |
 | `CODEX_GATE_SCHEMA` (경로) | | output-schema. 기본 `$CLAUDE_DIR/codex-schema.json` |
-| `CODEX_GATE_DATA_DIR` (경로) | | state/log 보존 위치. plugin 모델에선 `${CLAUDE_PLUGIN_DATA}` 권장 |
+| `CODEX_GATE_DATA_DIR` (경로) | | state/log 보존 위치. plugin 모델에선 `${CLAUDE_PLUGIN_DATA}` 권장. 주입 시 `<data>/<repo명>-<경로 hash8>/`로 repo별 자동 분리(아래 참고) |
 | `CODEX_GATE_FAIL_LIMIT` / `CODEX_GATE_PARSE_FAIL_LIMIT` | | escalation 임계(기본 3 / 2, 도달 시 escalate) |
 | `CODEX_GATE_BASELINE_REF` (ref) | | 부트스트랩 신뢰 기준 ref. 기본 `origin/main` |
 
@@ -44,6 +44,23 @@ codex-gate Stop hook의 **공통 골격**(C1)이 놓이는 디렉터리다.
   escalated(강제 통과)·차단·fail은 전진하지 않는다.
 - 상태 파일은 JSON(`cache_status` = gate_key 캐시 축 / `last_result` = 마지막 hook 결과 축 —
   자동화는 `last_result`만 소비). 구버전 평문 state(`FAIL PARSE`)는 카운터를 승계해 자동 전환된다.
+
+## data dir 분리와 stop 루프 가드 (2026-06-11 proposal-review 보완)
+
+- **레이아웃**: `CODEX_GATE_DATA_DIR` 주입 시 state/log는 `<data>/<repo명>-<repo 절대경로 sha256 앞 8자>/`에
+  놓인다. basename만 쓰면 같은 이름의 다른 repo가 state를 공유해 vc 단절 오차단이 재발하기 때문이다.
+  디렉터리 안의 `.repo-path` 메타데이터로 소유권을 기록하고, 불일치하면 fail-closed(exit 2)로 차단한다.
+- **마이그레이션 없음**: 구 레이아웃(flat 또는 `<repo명>/`)의 state는 소유권을 검증할 수 없어 승계하지
+  않는다(fresh bootstrap — vc 공백은 baseline ref 부트스트랩이 안전하게 재검증). 구 디렉터리/flat 파일은
+  고아가 되므로 수동 정리 대상이다. 삭제 전 dry-run 목록 확인:
+  `ls ~/.claude/plugins/data/harness-monitoring/` 에서 `<repo명>-<hash8>` 형식이 **아닌** 항목만 삭제한다.
+- **stop 루프 가드 순서**: core·entry 모두 `stop_hook_active` 판정이 **모든 exit 2 경로보다 앞**이다.
+  주입점 오설정·명시 profile 부재 등 구성 오류는 첫 stop(active=false)에서 exit 2로 1회 노출되고,
+  재발화(active=true)에서는 종료를 허용해 무한 stop 루프를 막는다. entry는 stdin을 가드에서 한 번 읽고
+  core에 herestring으로 재공급한다(core의 `cat` 계약 유지).
+- **테스트**: `bash tests/codex-gate-tests.sh` — 격리 스크래치 repo + codex 스텁으로 14개 시나리오
+  (커밋 윈도우 사각지대, 루프 가드, basename 충돌, 소유권 충돌, 구 레이아웃 미승계, 단절/기준 없음 차단 등)를
+  검증한다. core/entry 수정 시 반드시 실행한다.
 
 > **소비자 opt-in 모델**: plugin Stop hook은 모든 repo에 글로벌로 등록되지만, convention 경로
 > `<repo>/.claude/codex-gate.profile`이 **없는 repo는 자동으로 skip된다**(entry가 source 전에 `exit 0`).

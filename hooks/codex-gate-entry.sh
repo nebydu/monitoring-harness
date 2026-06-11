@@ -10,6 +10,21 @@
 #       첫 인자 = consumer profile 경로(기본: ${CLAUDE_PROJECT_DIR}/.claude/codex-gate.profile = convention).
 set -euo pipefail
 
+# 0) 무한 Stop 루프 가드 — entry의 exit 2 경로(명시 CODEX_GATE_PROFILE 부재)보다 먼저 판정한다.
+#    가드가 뒤에 있으면 오설정 시 stop_hook_active=true에서도 매번 차단되어 무한 stop 루프가 된다.
+#    stdin은 여기서 한 번 읽고, core에는 herestring으로 재공급한다(core의 `cat` 계약 유지 —
+#    core는 entry 없이 직접 source되는 consumer도 있어 자체 가드를 보존하며, 이중 판정은 무해하다).
+INPUT="$(cat)"
+STOP_ACTIVE="$(printf '%s' "$INPUT" | python -c '
+import sys, json
+try:
+    d = json.loads(sys.stdin.read())
+    print("1" if d.get("stop_hook_active") else "0")
+except Exception:
+    print("0")
+' 2>/dev/null || echo "0")"
+[ "$STOP_ACTIVE" = "1" ] && exit 0
+
 # 1) consumer profile 경로 결정 (우선순위: override env → 인자(convention) → CLAUDE_PROJECT_DIR convention)
 #    - 기본은 consumer repo의 convention 위치다. per-user config나 절대경로가 필요 없어 협업자 공유에 안전하다.
 #    - 비표준 위치를 쓰려면 CODEX_GATE_PROFILE 환경변수로만 덮어쓴다(테스트/예외용).
@@ -37,8 +52,8 @@ export CODEX_GATE_SCHEMA="${CODEX_GATE_SCHEMA:-$PLUGIN_ROOT/shared/schemas/codex
 export CODEX_GATE_DATA_DIR="${CODEX_GATE_DATA_DIR:-${CLAUDE_PLUGIN_DATA:-}}"
 
 # 3) consumer 델타 로드 → 공통 골격 실행
-#    (Stop hook 입력 JSON은 stdin으로 흘러 core의 `cat`이 읽는다 — source는 stdin을 보존한다)
+#    (Stop hook 입력 JSON은 §0에서 이미 읽었으므로 herestring으로 core의 `cat`에 재공급한다)
 # shellcheck source=/dev/null
 source "$PROFILE"
 # shellcheck source=/dev/null
-source "$PLUGIN_ROOT/shared/hooks/codex-gate-core.sh"
+source "$PLUGIN_ROOT/shared/hooks/codex-gate-core.sh" <<< "$INPUT"

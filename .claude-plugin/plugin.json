@@ -1,6 +1,6 @@
 {
   "name": "harness",
-  "description": "Shared Claude Code/Codex harness for monitoring repos. Provides runtime codex-gate (Stop hook) for script-agent/hub, and an on-demand proposal-review command for design/policy decisions. Domain-specific values stay in each consumer profile. monitoring-meta remains out of scope for runtime codex-gate (H4); proposal-review is available to any repo via convention profile, including monitoring-meta.",
+  "description": "Shared Claude Code/Codex harness for monitoring repos. Provides runtime codex-gate (Stop hook) for consumer repos that opt in via convention profile (currently script-agent/hub/infra), and an on-demand proposal-review command for design/policy decisions. Domain-specific values stay in each consumer profile. monitoring-meta remains out of scope for runtime codex-gate (H4); proposal-review is available to any repo via convention profile, including monitoring-meta.",
   "author": {
     "name": "nebydu"
   },
