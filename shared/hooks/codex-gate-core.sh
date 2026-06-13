@@ -409,7 +409,7 @@ if [ "$STATE_STATUS" = "escalated" ]; then
 fi
 
 # ── 6) Codex 호출 (fallback: codex exec, read-only) ──────────────────────
-# [임시 예외 — 추적: monitoring-meta/handoff/codex-gate-readscope]
+# [임시 예외 — 추적: docs/decisions/codex-gate-readscope.md]
 #   sandbox_permissions=disk-full-read-access: read-only 유지(쓰기·네트워크 차단)하되
 #   디스크 읽기만 전체 허용. consumer profile 프롬프트가 형제 repo의 기준 문서
 #   (예: infra의 ../monitoring-meta/docs·adr)를 교차검증하라고 지시하는데, 기본
@@ -417,7 +417,7 @@ fi
 #   없음"으로 fail-closed하는 false-negative가 났다.
 #   ⚠ 최소권한 위반: 이건 ~/.ssh·타 repo .env 등 디스크 전체를 읽기로 여는 광범위 조치다.
 #   만료 조건 — (B) Codex cwd=워크스페이스 루트로 최소권한화하거나 codex-cli에 디렉터리별
-#   read allowlist가 생기면 이 -c 줄을 즉시 제거/교체한다(handoff codex-gate-readscope §B).
+#   read allowlist가 생기면 이 -c 줄을 즉시 제거/교체한다(codex-gate-readscope §B).
 # [가드 ②] 넓힌 읽기 범위를 프롬프트로 제약 — 범위 밖·비밀 파일 열람/인용 금지.
 CODEX_GATE_READ_GUARD="[보안 가드] 너는 read-only로 디스크 전체를 읽을 수 있으나, 리뷰 대상 repo와 그 repo가 프롬프트에서 명시적으로 참조하는 기준 문서(예: ../monitoring-meta 하위) 외의 파일은 열지 마라. 비밀·자격증명 파일(.env, *.key, *.pem, id_rsa, ~/.ssh/*, *credential*, *secret* 등)은 절대 열지 말고, 어떤 파일이든 비밀처럼 보이는 내용은 응답·critical_issues·spec_violations 문자열에 인용하지 마라. 범위 밖 파일을 건너뛴 사실 자체는 보고할 필요 없다."
 rm -f "$LAST_MSG" "$ISSUES_FILE"
