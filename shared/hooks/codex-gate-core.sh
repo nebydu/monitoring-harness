@@ -412,9 +412,14 @@ fi
 # [임시 예외 — 추적: docs/decisions/codex-gate-readscope.md]
 #   sandbox_permissions=disk-full-read-access: read-only 유지(쓰기·네트워크 차단)하되
 #   디스크 읽기만 전체 허용. consumer profile 프롬프트가 형제 repo의 기준 문서
-#   (예: infra의 ../monitoring-meta/docs·adr)를 교차검증하라고 지시하는데, 기본
-#   read-only 샌드박스는 cwd(repo 루트) 밖 읽기를 막아 Codex가 "기준 문서를 읽을 수
-#   없음"으로 fail-closed하는 false-negative가 났다.
+#   (예: infra의 ../monitoring-meta/docs·adr)를 교차검증하라고 지시하기 때문.
+#   ⚠ 플랫폼 한정(2026-06-14 검증): 이 플래그는 Landlock(Linux)/Seatbelt(macOS)에서만
+#   효과가 있다 — 거기선 read-only가 읽기 루트를 cwd로 한정한다. Windows "elevated"
+#   샌드박스는 읽기를 OS 레벨에서 안 막으므로(setup 로그 "read roots delegated") no-op이다.
+#   ⚠ 인과 정정: ac4babe가 고쳤다고 본 Windows phase1-041 false-negative는 OS 읽기 차단이
+#   아니었다(차단이면 항상 실패해야 하나 동형 변경이 6/11엔 PASS — 비결정적). 실제 원인은
+#   Codex가 형제 경로를 안 읽고 "못 읽음"으로 판정한 행동적 거부였고, profile에
+#   ../monitoring-meta/... 경로를 명시하며 해소됐다. 상세: codex-gate-readscope.md §0.
 #   ⚠ 최소권한 위반: 이건 ~/.ssh·타 repo .env 등 디스크 전체를 읽기로 여는 광범위 조치다.
 #   만료 조건 — (B) Codex cwd=워크스페이스 루트로 최소권한화하거나 codex-cli에 디렉터리별
 #   read allowlist가 생기면 이 -c 줄을 즉시 제거/교체한다(codex-gate-readscope §B).

@@ -10,6 +10,22 @@
 > **meta TODO**: §5 트랙 착수 시 meta가 `handoff/codex-gate-readscope/`로 work-id를 정식 등록하고
 > consumer profile 일괄 수정을 per-repo handoff로 라우팅한다(이 문서를 근거로).
 
+## 0. 정정 (2026-06-14) — 원인 진단 수정
+
+> 작성 당시 §2의 인과("Windows read-only 샌드박스가 cwd 밖 읽기를 막는다")는 **틀렸다.**
+> 실측으로 반증했으므로 결정 기록을 정정한다(이력 보존: §2~§3의 원문은 그대로 두되 본 절을 우선한다).
+
+**확인 사실(2026-06-14 실측):**
+- Windows codex 0.139 `[windows] sandbox = "elevated"`는 read-only에서도 형제 repo 읽기를 **OS 레벨에서 막지 않는다**(setup 로그 매회 `read roots delegated`). cwd=infra에서 `../monitoring-meta` 읽기가 `disk-full-read-access` **플래그 유무와 무관하게** 성공(재현 2회 + 옛 stderr의 PowerShell Get-Content "succeeded" 다수).
+- 이 monitoring 워크스페이스는 **CI/Linux 실행 이력이 0건**(5 repo 모두 CI 설정 부재, codex-gate는 Stop hook이라 구조적으로 CI 미발동). 즉 phase1-041 증상도 검증도 **100% Windows**.
+
+**인과 정정:**
+- §2가 이미 관찰한 **비결정성**("6/11엔 PASS")이 결정적 반증이다 — OS 읽기 차단이면 *항상* 실패해야 한다. 비결정적이라는 건 차단 주체가 OS 샌드박스가 아니라 **Codex 에이전트의 행동**(그 턴에 형제 경로를 읽으려 시도하느냐)이었다는 뜻이다.
+- 따라서 (A) `disk-full-read-access`(ac4babe)는 **Windows에선 no-op**이고, Windows phase1-041 false-negative의 근본 원인 수정이 아니다. 테스트도 Windows였다면 플래그를 빼도 통과했을 것 → "플래그 → 통과"의 인과는 성립하지 않는다.
+- **실질 해결책은 플래그가 아니라 profile 프롬프트의 명시적 형제 경로**(`../monitoring-meta/...`)다. 현재 모든 consumer profile이 경로를 명시하고 있어 Codex가 정상적으로 읽고 검증한다(escalation/block 로그 0건).
+
+**그래서 (A)를 어떻게 하나:** **롤백하지 않는다.** Windows에선 무해하고, §5 §B에서 비-Windows(Landlock/Seatbelt)로 이전하거나 `--cd`로 범위를 바꾸면 그때는 read-only가 읽기를 실제로 한정하므로 동등한 권한 확보가 필요해진다. 단 §5의 긴급도는 더 낮아진다(현재 Windows에선 (A) 없이도 동작).
+
 ## 1. 헤더
 
 | 필드 | 값 |
