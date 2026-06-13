@@ -409,9 +409,15 @@ if [ "$STATE_STATUS" = "escalated" ]; then
 fi
 
 # ── 6) Codex 호출 (fallback: codex exec, read-only) ──────────────────────
+# sandbox_permissions=disk-full-read-access: read-only 유지(쓰기·네트워크 차단)하되
+#   디스크 읽기만 전체 허용. consumer profile 프롬프트가 형제 repo의 기준 문서
+#   (예: infra의 ../monitoring-meta/docs·adr)를 교차검증하라고 지시하는데,
+#   기본 read-only 샌드박스는 cwd(repo 루트) 밖 읽기를 막아 Codex가 "기준 문서를
+#   읽을 수 없음"으로 fail-closed하는 false-negative가 났다. 읽기만 넓혀 해소.
 rm -f "$LAST_MSG" "$ISSUES_FILE"
 set +e
 printf '%s' "$REVIEW_INPUT" | codex exec --sandbox read-only \
+  -c 'sandbox_permissions=["disk-full-read-access"]' \
   --output-schema "$SCHEMA" \
   -o "$LAST_MSG" \
   "$CODEX_GATE_PROMPT" >/dev/null 2>"$CODEX_ERR"
