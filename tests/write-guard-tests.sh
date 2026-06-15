@@ -164,6 +164,27 @@ assert_eq "W13 docs/../src → src로 정규화 → exit 0" 0 "$RC"
 run_core "$OWN" "$PROFILE_EMPTY" "$OUTSIDE/x.txt"
 assert_eq "W15 PARENT 밖 절대경로 → exit 0 (범위 외)" 0 "$RC"
 
+# ════ W16 — 실제 production 입력 형태: Windows 절대 역슬래시 경로 ═════════
+# Claude Code(Windows)는 tool_input.file_path에 'C:\...' 역슬래시 절대경로를 넘긴다. 위 케이스는
+# 상대·MSYS 슬래시만 써서 이 형태를 안 밟는다 — realpath/normcase가 역슬래시 절대경로에서도
+# REPO_ROOT(forward-slash, git --show-toplevel)와 동일 정규형으로 수렴하는지 검증한다.
+if command -v cygpath >/dev/null 2>&1; then
+  # JSON은 python json.dumps로 만든다(역슬래시 이스케이프를 정확히 처리 — sed 수동 이스케이프 함정 회피).
+  run_core_win() { # repo profile win_path
+    PYTHONIOENCODING=utf-8 python -c 'import json,sys; sys.stdout.write(json.dumps({"tool_name":"Write","tool_input":{"file_path":sys.argv[1]}}))' "$3" \
+      | ( cd "$1" && bash "$DRIVER" "$2" "$CORE" ) >"$WORK/out.txt" 2>"$WORK/err.txt"
+    RC=$?; OUT="$(cat "$WORK/out.txt")"; ERR="$(cat "$WORK/err.txt")"
+  }
+  run_core_win "$OWN" "$PROFILE_EMPTY" "$(cygpath -w "$OWN/docs/win.md")"
+  assert_eq "W16 Windows 절대 docs → exit 2"  2 "$RC"
+  run_core_win "$OWN" "$PROFILE_EMPTY" "$(cygpath -w "$OWN/src/win.go")"
+  assert_eq "W16 Windows 절대 src → exit 0"   0 "$RC"
+  run_core_win "$OWN" "$PROFILE_EMPTY" "$(cygpath -w "$META/adr/win.md")"
+  assert_eq "W16 Windows 절대 형제 → exit 2"  2 "$RC"
+else
+  echo "skip - W16 (cygpath 없음 — 비-Windows 환경)"
+fi
+
 # ── 요약 ──────────────────────────────────────────────────────────────────
 echo ""
 echo "총 ${TOTAL} asserts, 실패 ${FAILED}"
