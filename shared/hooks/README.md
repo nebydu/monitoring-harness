@@ -1,6 +1,6 @@
 # shared/hooks
 
-codex-gate Stop hook의 **공통 골격**(C1)이 놓이는 디렉터리다.
+codex-gate Stop hook과 write-guard PreToolUse hook의 **공통 골격**(C1)이 놓이는 디렉터리다.
 
 ## 현재 상태 (H2-B 완료 — script-agent 전환됨)
 
@@ -83,3 +83,31 @@ script-agent에 plugin 모델로 적용·검증 완료(런타임 동등성, proj
 Stop hook 비활성만 사용자 세션에 남았다.
 → [`h2b-validation.md`](h2b-validation.md), [`equivalence.md`](equivalence.md),
 [`../../docs/installation.md`](../../docs/installation.md)
+
+## write-guard (PreToolUse 쓰기 가드)
+
+`write-guard-core.sh` — Write/Edit/NotebookEdit를 호출 **전**에 검사해 polyrepo 경계 밖 쓰기를
+차단하는 두 번째 축(PreToolUse). 진입점은 `../../hooks/write-guard-entry.sh`, 배선은
+`../../hooks/hooks.json`의 `PreToolUse`. codex-gate와 동일한 패턴(plugin 골격 + `git-bash.cmd`
+shim + convention profile)이다.
+
+- **차단 메커니즘 = `exit 2`** (정본). PreToolUse `exit 2` = 툴 차단 + stderr 사유를 모델에 환류.
+  JSON `permissionDecision:deny`는 **Edit/Write에서 무시되는 알려진 버그**가 있어 쓰지 않는다.
+- **차단 규칙**(정규화된 경로 기준, 우선순위): ① 자기 `REPO_ROOT/.claude/` = 허용(자동화 설정은
+  사람이 관리) → ② 자기 `docs/` = 차단 → ③ `PARENT` 하위이며 자기 repo 밖 = 차단(형제 repo 전체 +
+  ground truth meta + 형제 `.claude` 포함) → ④ profile 추가 차단 경로 → ⑤ 그 외 허용. 즉 자기
+  repo는 `docs/` 외 전부 허용, profile은 **조이기만** 가능(유도 규칙 약화 불가).
+- **경로 정규화**는 python `realpath` 기반 일원화(Windows/MSYS의 `..`·symlink·junction·대소문자
+  함정 회피). JSON 파싱 실패·`file_path` 부재는 **판단하지 않고 통과**(차단하지 않음).
+- **opt-in 모델**: convention 경로 `<repo>/.claude/write-guard.profile`이 **있는 repo만** 가드한다
+  (없으면 entry가 `exit 0` — 무관 프로젝트 미영향). profile이 비어 있어도 유도 규칙은 적용되고,
+  `WRITE_GUARD_BLOCK_PATHS`(배열)로 추가 차단 루트만 지정한다. 단 `WRITE_GUARD_PROFILE`을 명시
+  지정했는데 부재하면 오설정으로 보고 `exit 2`(fail-closed).
+
+| 주입점 | 필수 | 의미 |
+|---|---|---|
+| `WRITE_GUARD_BLOCK_PATHS` (배열) | | 추가 차단 루트(상대=repo 기준/절대, subtree 차단). add-only |
+
+**테스트**: `bash tests/write-guard-tests.sh` — 격리 워크스페이스(부모 밑 own + 형제 repo)로 15개
+시나리오(자기 docs/형제/ground truth 차단, 자기 코드/`.claude` 허용, 형제 `.claude` 차단, opt-in,
+realpath 정규화, 입력 방어, fail-closed 등)를 검증한다. core/entry 수정 시 반드시 실행한다.

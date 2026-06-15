@@ -10,16 +10,18 @@
 `CLAUDE.md` 코어 섹션, agent scaffold)는 사실상 같은 코드를 손으로 세 번 유지하면서 **drift**가
 쌓인다. 이 repo는 그 공통부를 plugin/shared로 끌어올려 **drift를 줄이는 것**을 목표로 한다.
 
-## 적용 범위: 2축 — runtime gate + decision-review command
+## 적용 범위: 3축 — runtime gate + write-guard + decision-review command
 
-이 플러그인은 두 축을 제공한다 (근거: [`docs/decisions/proposal-review-scope.md`](docs/decisions/proposal-review-scope.md)):
+이 플러그인은 세 축을 제공한다 (근거: [`docs/decisions/proposal-review-scope.md`](docs/decisions/proposal-review-scope.md)):
 
-| | ① codex-gate | ② proposal-review |
-|---|---|---|
-| 시점 | 변경 **후** 안전장치 | 변경/결정 **전** 합의 장치 |
-| 발동 | Stop hook (자동) | `/proposal-review` command (명시 호출) |
-| 대상 | 코드/런타임 변경 | 문서·정책·설계·운영 결정 |
-| 소비자 | **script-agent·hub 전용** (전환 완료) | profile 둔 모든 repo (**meta 포함 가능**) |
+| | ① codex-gate | ② write-guard | ③ proposal-review |
+|---|---|---|---|
+| 시점 | 변경 **후** 안전장치 | 쓰기 **전** 안전장치 | 변경/결정 **전** 합의 장치 |
+| 발동 | Stop hook (자동) | PreToolUse hook (자동) | `/proposal-review` command (명시 호출) |
+| 대상 | 코드/런타임 변경 | Write/Edit/NotebookEdit 경로 | 문서·정책·설계·운영 결정 |
+| 소비자 | **script-agent·hub 전용** (전환 완료) | profile 둔 모든 repo (opt-in) | profile 둔 모든 repo (**meta 포함 가능**) |
+
+②는 polyrepo 경계 보호다 — 자기 repo `docs/`·형제 repo·ground truth(meta)로의 쓰기를 호출 전 `exit 2`로 차단한다(`.claude/`·자기 코드는 허용). `.claude/write-guard.profile`을 둔 repo만 가드하며(opt-in), 차단은 유도 규칙(자기 docs + 형제 전체)으로 자동 동작하고 profile로 추가 차단 경로만 조일 수 있다. 상세는 [`shared/hooks/README.md`](shared/hooks/README.md).
 
 ①의 대상은 **코드를 실행하는 런타임 하네스**다. **monitoring-meta는 코드를 실행하지 않고
 spec 일관성을 판정**하는 다른 범주라 ①의 적용 대상이 아니다(드리프트 "예외"가 아니라 범주 경계,

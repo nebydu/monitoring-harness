@@ -1,5 +1,20 @@
 {
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/git-bash.cmd",
+            "args": [
+              "${CLAUDE_PLUGIN_ROOT}/hooks/write-guard-entry.sh",
+              "${CLAUDE_PROJECT_DIR}/.claude/write-guard.profile"
+            ]
+          }
+        ]
+      }
+    ],
     "Stop": [
       {
         "matcher": "",
