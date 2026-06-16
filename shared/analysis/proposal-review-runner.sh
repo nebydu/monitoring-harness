@@ -45,12 +45,14 @@ PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$(git rev-parse --show-toplevel 2>/dev/null |
 EXPLICIT_PROFILE="${PROPOSAL_REVIEW_PROFILE:-}"
 PROFILE="${EXPLICIT_PROFILE:-${PROJECT_DIR:+$PROJECT_DIR/.claude/proposal-review.profile}}"
 CONTEXT_STATUS="none (no profile — degraded review)"
+DEGRADED=true   # profile 미로드 = degraded(소비자 boolean용). 성공 분기에서만 false로 내린다(기존 분기 재사용 — 새 판정 로직 없음).
 PROPOSAL_REVIEW_POLICY=""
 PROPOSAL_REVIEW_CONTEXT_DOCS=()
 if [ -n "$PROFILE" ] && [ -f "$PROFILE" ]; then
   # shellcheck source=/dev/null
   source "$PROFILE"
   CONTEXT_STATUS="profile: $PROFILE"
+  DEGRADED=false
 elif [ -n "$EXPLICIT_PROFILE" ]; then
   # 명시 지정 후 부재 = 오설정 (codex-gate-entry와 동일한 의도 신호 원칙)
   echo "[proposal-review] 구성 오류: 지정한 PROPOSAL_REVIEW_PROFILE을 찾지 못함 ('$EXPLICIT_PROFILE')." >&2
@@ -113,7 +115,8 @@ fi
 # PYTHONIOENCODING=utf-8: Windows cp949 콘솔에서 non-CP949 문자 UnicodeEncodeError 방지
 printf '%s' "$PROPOSAL" | PYTHONIOENCODING=utf-8 python -c '
 import json, sys, datetime
-last_msg, status, docs_nl, out_file = sys.argv[1:5]
+last_msg, status, docs_nl, out_file, degraded_arg = sys.argv[1:6]
+degraded = (degraded_arg == "true")   # bash DEGRADED("true"/"false") → JSON boolean
 try:
     with open(last_msg, encoding="utf-8") as fp:
         review = json.load(fp)
@@ -122,12 +125,13 @@ except Exception as e:
     sys.stderr.write("[proposal-review] Codex 응답 파싱 실패: %s\n원본 앞 200자: %s\n" % (e, head))
     sys.exit(3)
 docs = [d for d in docs_nl.split("\n") if d]
-result = {"context": status, "context_docs": docs}
+result = {"degraded": degraded, "context": status, "context_docs": docs}
 result.update(review)
 print(json.dumps(result, ensure_ascii=False, indent=2))
 if out_file:
     artifact = {
         "generated_at": datetime.datetime.now().astimezone().isoformat(),
+        "degraded": degraded,
         "context": status,
         "context_docs": docs,
         "proposal": sys.stdin.read(),
@@ -135,4 +139,4 @@ if out_file:
     artifact.update(review)
     with open(out_file, "w", encoding="utf-8") as g:
         json.dump(artifact, g, ensure_ascii=False, indent=2)
-' "$LAST_MSG" "$CONTEXT_STATUS" "$DOCS_USED" "$OUT_FILE"
+' "$LAST_MSG" "$CONTEXT_STATUS" "$DOCS_USED" "$OUT_FILE" "$DEGRADED"
