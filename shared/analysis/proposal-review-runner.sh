@@ -131,8 +131,8 @@ if out_file:
         "context": status,
         "context_docs": docs,
         "proposal": sys.stdin.read(),
-        "review": review,
     }
+    artifact.update(review)
     with open(out_file, "w", encoding="utf-8") as g:
         json.dump(artifact, g, ensure_ascii=False, indent=2)
 ' "$LAST_MSG" "$CONTEXT_STATUS" "$DOCS_USED" "$OUT_FILE"
