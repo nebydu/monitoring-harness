@@ -63,13 +63,29 @@ meta handoff(작업 spec) → [runtime repo] analyzer 산출물
 - **Phase 1 도메인 backlog(T-항목)**: 이 결정은 프로세스 게이트이지 도메인 작업이 아니다. T-항목과
   분리해 추적한다.
 
-## 5. Evidence (검증 상태)
+## 5. Evidence (검증 완료 — 2026-06-16)
 
-- **검증 예정 (아직 미실시)**: handoff 1건 드라이런으로 두 경로를 실증한 뒤 결과를 여기 연결한다 —
-  (a) `approve` → implementer 진행 / (b) 非approve(`revise`/`block`) → 중단·사람 중재.
-  - 현재 이 결정에 연결된 드라이런 산출물은 없다. (추측으로 채우지 않는다.)
-  - 드라이런 시 `proposal-review --out` 아티팩트(top-level `verdict`/`degraded`)를 근거로 남기고,
-    그 경로를 본 절에 링크한다.
+handoff 1건(`W-DRYRUN-checkpoint`)에서 출발한 두 제안으로 게이트 두 경로를 실증했다. cwd=hub에서
+runner를 직접 호출(`codex-cli 0.139.0`, read-only), hub `proposal-review.profile`이 주입돼 두 case
+모두 **non-degraded**(`degraded: false`). 산출물·재현 정보:
+[`evidence/proposal-review-handoff/`](evidence/proposal-review-handoff/README.md).
+
+게이트 기준(hub·sa `agents/implementer.md` / `CLAUDE.md §5`): verdict가 `approve`가 아니거나
+`confidence: low` / `missing_context` non-empty / degraded면 구현 안 함(`status: blocked`).
+
+| case | verdict | confidence | missing_context | degraded | 게이트 결정 |
+|---|---|---|---|---|---|
+| A 정합 제안 ([`case-a-aligned.json`](evidence/proposal-review-handoff/case-a-aligned.json)) | `approve` | high | `[]` | false | 4조건 충족 → **implementer 진행** |
+| B 충돌 제안 ([`case-b-conflicting.json`](evidence/proposal-review-handoff/case-b-conflicting.json)) | `block` | high | 2건 | false | 非approve → **중단·사람 중재** |
+
+- (a) 진행 경로: Case A는 1차에 `approve`였지만 `missing_context` 2건이 남아(게이트상 차단) handoff
+  spec 발췌·acceptance criteria를 1회 보강해 재호출 → `approve`/high/`missing_context: []`로 게이트
+  4조건을 모두 충족했다. "미흡 지적 → 보완 → approve" 흐름 자체가 함께 실증됐다.
+- (b) 중단 경로: Case B는 형제 repo 직접 수정·handoff 우회·Phase 1+의 Phase 0 강제를 전제해
+  hub `proposal-review.profile`에 주입된 정책과 정면 충돌 → `block`(critical_issues 4건이 정책 직접
+  인용). 게이트는 implementer를 호출하지 않고 사람 중재로 넘긴다.
+- 부수 확인: runner는 mktemp+trap으로 codex 입력을 정리해 hub에 임시물을 남기지 않는다(`git -C hub
+  status` 무변경). `--out` 아티팩트는 평탄 형태라 `verdict`/`degraded`가 top-level에서 바로 읽힌다.
 
 ## 6. 영향 파일 (후속 — 본 작업 범위 밖)
 

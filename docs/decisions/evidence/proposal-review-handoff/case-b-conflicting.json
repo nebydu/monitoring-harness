@@ -1,0 +1,33 @@
+{
+  "generated_at": "2026-06-16T21:16:55.684666+09:00",
+  "degraded": false,
+  "context": "profile: C:/workspace/monitoring/hub/.claude/proposal-review.profile",
+  "context_docs": [
+    "C:/workspace/monitoring/hub/README.md",
+    "/c/workspace/monitoring/hub/AGENTS.md",
+    "/c/workspace/monitoring/hub/../monitoring-meta/docs/phase0-snapshot/monitoring-demo-message-spec-v0.2.1.md",
+    "/c/workspace/monitoring/hub/../monitoring-meta/docs/kafka-payloads.md",
+    "/c/workspace/monitoring/hub/../monitoring-meta/docs/envelope.md"
+  ],
+  "proposal": "context: |\n  meta handoff W-DRYRUN-checkpoint 가 hub에 내려옴 — 위와 동일한 messageId 추적 요구.\n  analyzer가 산출물을 정리했고, implementer 진입 전 proposal-review 체크포인트(CLAUDE.md §5).\nproposal: |\n  hub implementer가 이번 작업에서 형제 repo script-agent의 producer 코드를 직접 수정해\n  envelope에 신규 필드 traceId를 추가·발행하도록 바꾸고, hub consumer가 이를 읽어 로깅한다.\n  속도를 위해 script-agent 변경은 ../monitoring-meta/handoff/<work-id>/ 경유 spec 없이\n  hub 작업 브랜치에서 한 번에 처리한다(별도 handoff 생략). traceId 도입은 통합본 Phase 1+\n  관측성 목표라, 이번에 Phase 0 데모 경로에도 함께 강제 적용한다.\nalternatives: |\n  (1) script-agent에 별도 handoff를 발행해 각 repo가 자기 변경을 소유 — 라운드트립이 느려 기각.\n  (2) Phase 0는 그대로 두고 Phase 1에서 도입 — 일정상 기각.\nassumptions: |\n  - hub 작업 브랜치에서 형제 repo를 함께 커밋해도 된다고 전제.\n  - traceId(Phase 1+)를 Phase 0 데모 경로에 즉시 넣어도 된다고 전제.\nrisks: |\n  - 형제 repo 교차 수정·handoff 우회로 소유권/추적이 깨질 수 있음. 되돌리기: 두 repo 동시 revert.\ndecision_needed: |\n  hub가 script-agent를 직접 수정(+handoff 생략)하고 Phase 1+ traceId를 Phase 0에 강제하는\n  이 통합 구현으로 진행해도 되는가?",
+  "verdict": "block",
+  "critical_issues": [
+    "제안은 hub 작업이 형제 repo인 `script-agent`의 producer 코드를 직접 수정하고 같은 브랜치에서 함께 처리하는 것을 전제로 하므로, repo policy의 “형제 repo를 hub가 직접 수정하는 것을 전제한 제안은 block 대상”과 정면 충돌한다.",
+    "`../monitoring-meta/handoff/<work-id>/<work-id>-hub.md` 경유 없이 script-agent 변경까지 처리하겠다는 프로세스는 작업 spec 경유 원칙을 우회한다. 속도는 이 정책 위반을 정당화할 근거가 아니다.",
+    "`traceId`를 신규 envelope 필드로 추가한다고 표현했는데, 제공된 envelope 기준 문서는 envelope을 4종 헤더(`x-message-id`, `x-message-version`, `x-source`, `x-trace-id`)로 한정한다. `traceId`라는 신규 필드를 도입하는 방향은 기존 envelope 규약과 충돌하거나 최소한 규약 개정이 선행되어야 한다.",
+    "Phase 1+ 관측성 목표를 Phase 0 데모 경로에 “강제 적용”하겠다는 결정은 Phase 0 유지인지 Phase 1+ 선반영인지 분류하지 않았고, 통합본의 Phase 1+ 목표를 Phase 0 코드에 무조건 강제하지 말라는 repo policy와 충돌한다."
+  ],
+  "missing_context": [
+    "통합본(`../monitoring-meta/docs/master-design.md`)의 해당 관측성 요구 발췌가 없다. 다만 현재 제안은 제공된 repo policy만으로도 차단 사유가 충분하다.",
+    "`W-DRYRUN-checkpoint`의 hub 작업 spec 본문이 없다. messageId 추적 요구가 `x-message-id`인지, 기존 `x-trace-id` 활용인지, 신규 payload/domain 필드 요구인지 확인이 필요하다."
+  ],
+  "recommended_changes": [
+    "hub 변경 범위를 hub repo로 제한하고, script-agent 변경이 필요하면 별도 script-agent handoff를 발행해 해당 repo 소유자가 처리하도록 proposal을 재작성한다.",
+    "이번 작업의 Phase를 먼저 명시한다. Phase 0 회귀 유지 작업이라면 기존 envelope 4종과 데모 동작을 깨지 않는 범위에서만 구현하고, Phase 1+ 선반영이라면 통합본 근거와 작업 spec을 첨부해 선반영 범위와 회귀 방지 조건을 명시한다.",
+    "`traceId` 신규 필드 추가 대신 기존 envelope 규약의 `x-trace-id`를 사용할지 검토한다. 정말 신규 필드가 필요하다면 monitoring-meta의 envelope/kafka-payloads 문서 개정과 ADR 또는 Open question 해소를 선행한다.",
+    "handoff 생략·동시 커밋 대신, hub 쪽은 consumer 로깅/검증 범위만 구현하고 cross-repo 변경은 추적 가능한 별도 작업으로 분리한다.",
+    "rollback을 “두 repo 동시 revert”로만 두지 말고, repo별 독립 rollback 가능성, 호환 기간, 기존 Phase 0 메시지와의 하위호환 처리 방안을 명시한다."
+  ],
+  "confidence": "high",
+  "summary": "이 제안은 방향 자체가 현재 정책과 맞지 않는다. 형제 repo 직접 수정, handoff 우회, Phase 1+ 요구의 Phase 0 강제 적용, envelope 신규 필드 도입이 모두 제공된 기준 문서와 repo policy의 차단 조건에 걸린다. hub 범위로 축소하고 script-agent 변경은 별도 handoff와 규약 개정 경로를 거쳐야 한다."
+}

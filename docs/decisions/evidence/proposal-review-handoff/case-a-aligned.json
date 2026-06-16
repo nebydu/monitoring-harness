@@ -1,0 +1,23 @@
+{
+  "generated_at": "2026-06-16T21:16:06.042573+09:00",
+  "degraded": false,
+  "context": "profile: C:/workspace/monitoring/hub/.claude/proposal-review.profile",
+  "context_docs": [
+    "C:/workspace/monitoring/hub/README.md",
+    "/c/workspace/monitoring/hub/AGENTS.md",
+    "/c/workspace/monitoring/hub/../monitoring-meta/docs/phase0-snapshot/monitoring-demo-message-spec-v0.2.1.md",
+    "/c/workspace/monitoring/hub/../monitoring-meta/docs/kafka-payloads.md",
+    "/c/workspace/monitoring/hub/../monitoring-meta/docs/envelope.md"
+  ],
+  "proposal": "context: |\n  meta handoff W-DRYRUN-checkpoint 가 hub에 내려옴 — Kafka consumer가 envelope 처리에\n  실패할 때 로그에서 어떤 메시지였는지 추적이 안 돼 운영 디버깅이 어렵다는 운영 피드백.\n  analyzer 산출물 정리 후 implementer 진입 전 proposal-review 체크포인트(CLAUDE.md §5).\n  1차 리뷰에서 (a) handoff spec 본문 부재, (b) OTLP 예외 토픽/MDC 정리 기준 미명시가 지적돼\n  spec 발췌와 acceptance criteria를 보강한 보완본이다.\nhandoff_spec_발췌: |\n  ../monitoring-meta/handoff/W-DRYRUN-checkpoint/W-DRYRUN-checkpoint-hub.md (발췌):\n    - 목표: hub Kafka consumer 실패 경로 관측성 보강(Phase 0 유지). envelope 계약 변경 금지.\n    - 범위: envelope 헤더를 갖는 토픽(command-topic, result-topic-job, result-topic-log,\n      audit-topic)의 실패(catch) 로그에 x-message-id를 구조화 필드로 기록.\n      heartbeats-topic(OTLP 예외, envelope 부재가 정상)은 \"unknown\"으로 남긴다.\n    - 비범위: 형제 repo 수정 금지, 신규 필드/스키마 추가 금지, 정상 경로 동작 변경 금지.\n통합본_발췌: |\n  master-design.md 관련 항목(발췌): 데모 spec v0.2.1은 Phase 0 회귀 가드이며 envelope 계약은\n  Phase 0에서 동결. 관측성(structured logging) 보강은 계약 변경이 아니므로 Phase 0 유지 범위.\nproposal: |\n  envelope 헤더를 갖는 토픽의 처리 실패(catch) 경로 로그에 x-message-id를 구조화 로그\n  필드(MDC key=\"messageId\")로 1개 추가한다. 정상/성공 경로는 불변, 실패 로깅 1줄에 식별자만\n  덧붙이는 additive 변경이며 기존 평문 로그 메시지 문자열은 그대로 둔다. envelope 계약(필드\n  추가/삭제)은 건드리지 않고 이미 수신한 헤더를 읽기만 한다. 분류: Phase 0 유지.\n  acceptance criteria:\n    - x-message-id 존재 시 MDC messageId에 기록, 부재(heartbeats-topic 등) 시 \"unknown\".\n    - consumer 처리 후 finally에서 MDC messageId 제거(listener 스레드 재사용 오염 방지).\n    - 기존 로그 메시지 문자열 불변(구조화 필드만 추가).\n    - 실패 경로 단위/로그캡처 테스트로 위 3항 검증.\nalternatives: |\n  (1) 전체 envelope 로깅 — 민감정보·로그량 과다라 기각.\n  (2) 별도 추적 테이블 적재 — Phase 0 범위 초과(인프라 변경)라 기각.\n  (3) 변경 없음 — 운영 디버깅 난이도 그대로라 기각.\nassumptions: |\n  - 수신 envelope 헤더에 x-message-id가 존재(spec v0.2.1). 부재 시 \"unknown\" 처리로 흡수.\n  - 작업 spec은 위 handoff(../monitoring-meta/handoff/W-DRYRUN-checkpoint/...-hub.md) 경유.\n  - 형제 repo(script-agent/monitoring-meta/infra)는 수정하지 않는다 — hub 내부 로깅만.\nrisks: |\n  - 구조화 MDC 필드만 추가하고 평문 포맷은 불변이라 로그 파서 영향 낮음.\n  - MDC 누수 위험은 finally 정리(acceptance criteria)로 차단.\n  - 되돌리기: 해당 커밋 revert 1건이면 원복(상태/마이그레이션 없음).\ndecision_needed: |\n  이 additive 실패-로그 식별자 추가(보완본)를 Phase 0 유지 변경으로 구현 진행해도 되는가?",
+  "verdict": "approve",
+  "critical_issues": [],
+  "missing_context": [],
+  "recommended_changes": [
+    "구현 spec에는 hub가 실제로 consume하는 토픽 기준으로 적용 대상을 다시 적는 것이 좋다. 현재 문구의 `command-topic`은 hub 입장에서는 producer 토픽이므로, consumer 실패 경로 적용 대상과 producer 실패 로그 적용 대상을 혼동하지 않게 분리하라.",
+    "테스트 명세에 MDC 제거 검증을 명시할 때, 동일 listener 스레드에서 연속 실패/성공 또는 실패/실패를 흉내 내어 이전 `messageId`가 남지 않는 케이스를 포함하라.",
+    "`x-message-id` 헤더 디코딩 실패나 비UTF-8 값이 들어온 경우도 `unknown`으로 흡수할지, 예외를 다시 던질지 구현 전 acceptance criteria에 한 줄로 고정하라."
+  ],
+  "confidence": "high",
+  "summary": "제안은 운영 디버깅 문제를 실제 실패 로그의 메시지 식별성 부족으로 정확히 정의했고, Phase 0 유지·envelope 계약 불변·형제 repo 미수정 조건을 명시해 입력 정책과 충돌하지 않는다. MDC 누수와 rollback 경로도 다뤘으며, 변경 범위가 실패 로그의 구조화 필드 추가로 제한되어 적용을 막을 결함은 없다."
+}
