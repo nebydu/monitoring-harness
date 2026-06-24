@@ -6,8 +6,10 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/git-bash.cmd",
+            "command": "cmd.exe",
             "args": [
+              "/c",
+              "${CLAUDE_PLUGIN_ROOT}/hooks/git-bash.cmd",
               "${CLAUDE_PLUGIN_ROOT}/hooks/write-guard-entry.sh",
               "${CLAUDE_PROJECT_DIR}/.claude/write-guard.profile"
             ]
@@ -21,8 +23,10 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/git-bash.cmd",
+            "command": "cmd.exe",
             "args": [
+              "/c",
+              "${CLAUDE_PLUGIN_ROOT}/hooks/git-bash.cmd",
               "${CLAUDE_PLUGIN_ROOT}/hooks/codex-gate-entry.sh",
               "${CLAUDE_PROJECT_DIR}/.claude/codex-gate.profile"
             ]
